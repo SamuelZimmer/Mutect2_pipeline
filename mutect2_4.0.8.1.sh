@@ -78,7 +78,6 @@ NOPATHNAME=${NAME##*/}
 NAME2=${BAM2%.bam}
 NOPATHNAME2=${NAME2##*/}
 
-module load samtools/1.5
 
 ml samtools/1.5
 TUMORSAMPLE=`samtools view -H $BAM | grep '@RG' | gawk 'NR==1{ if (match($0,/SM:[ A-Za-z0-9_-]*/,m)) print m[0] }' | sed 's/SM://'`
@@ -111,6 +110,8 @@ LOG=$JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${NOPATHNAME}_${CHR}.log
 #--cosmic /nfs3_ib/bourque-mp2.nfs/tank/nfs/bourque/nobackup/share/mugqic_dev/genomes/Homo_sapiens/hg1k_v37/annotations/b37_cosmic_v70_140903.vcf.gz \
 #--dbsnp /cvmfs/soft.mugqic/CentOS6/genomes/species/Homo_sapiens.GRCh37/annotations/Homo_sapiens.GRCh37.dbSNP142.vcf.gz
 
+
+if [ ! -f $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${CHR}.vcf.gz ];then \
 COMMAND="timestamp() {
   date +\"%Y-%m-%d %H:%M:%S\"
 }
@@ -141,3 +142,13 @@ sbatch --job-name=mutect2_4.0_${CHR}_${NOPATHNAME} --output=%x-%j.out --time=24:
 echo $COMMAND >> $LOG
 echo "Submitted:" | sed $'s,.*,\e[96m&\e[m,' >> $LOG 
 echo "$(timestamp)" >> $LOG
+
+else echo "Skipping step :" $STEP
+COMMAND="echo \"Step already done\""
+echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}_skipped.sh
+echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}_skipped.sh
+
+sbatch --job-name=mutect2_4.0_${NOPATHNAME} --output=%x-%j.out --time=00:02:00 \
+--mem=1G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}_skipped.sh \
+| awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}.JOBID ;\
+fi

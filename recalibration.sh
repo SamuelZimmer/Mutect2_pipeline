@@ -36,12 +36,13 @@ timestamp() {
 
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.log
 
+if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
 COMMAND="timestamp() {
   date +\"%Y-%m-%d %H:%M:%S\"
 }
 echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
 timestamp >> $LOG
-module load mugqic/java/openjdk-jdk1.8.0_72 mugqic/GenomeAnalysisTK/3.7 && \
+module load mugqic/java/openjdk-jdk1.8.0_72 mugqic/GenomeAnalysisTK/3.7 samtools/1.5 && \
 java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.7/GenomeAnalysisTK.jar \
   --analysis_type BaseRecalibrator \
   --num_cpu_threads_per_data_thread 20 \
@@ -57,7 +58,8 @@ java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cv
   --reference_sequence $REF \
   --BQSR ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp \
   --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam && \
-md5sum ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.md5
+md5sum ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.md5 && \
+samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
 timestamp >> $LOG"
 
@@ -65,10 +67,21 @@ timestamp >> $LOG"
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 
-sbatch --job-name=recalibration_${NOPATHNAME} --output=%x-%j.out --time=120:00:00 --mem=31G --cpus-per-task=20 --dependency=afterok:$JOB_DEPENDENCIES \
+sbatch --job-name=recalibration_${NOPATHNAME} --output=%x-%j.out --time=120:00:00 \
+--mem=31G --cpus-per-task=20 --dependency=afterok:$JOB_DEPENDENCIES \
 ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID
 
 echo $COMMAND >> $LOG
 echo "Submitted:" | sed $'s,.*,\e[96m&\e[m,' >> $LOG 
 echo "$(timestamp)" >> $LOG
+
+else echo "Skipping step :" $STEP
+COMMAND="echo \"Step already done\""
+echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
+echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
+
+sbatch --job-name=recalibration_${NOPATHNAME} --output=%x-%j.out --time=00:02:00 \
+--mem=1G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh \
+| awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID ;\
+fi

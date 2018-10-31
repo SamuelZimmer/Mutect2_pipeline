@@ -230,7 +230,8 @@ if [ ! -f chromosome.list ];then bash ${MY_PATH}/make_chromosome_list.sh ; fi
 #if bam files has no chr in chromosome names
 if [ ! -f fixed_chromosome.list ];then sed 's/chr//' chromosome.list > fixed_chromosome.list; fi
 
-for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.1.sh -t $TUMOR -n $NORMAL -r $REF -c $chromosome $PREVIOUS ; done
+for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.1.sh -t $TUMOR -n $NORMAL \
+-r $REF -c $chromosome $PREVIOUS ; done
 
 
 

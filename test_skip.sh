@@ -4,11 +4,7 @@
 
 #alias cyan="sed $'s,.*,\e[96m&\e[m,'"
 
-module load samtools/1.5
-
-export BAM=$1
-export NAME=${BAM%.bam}
-export NOPATHNAME=${NAME##*/}
+export NOPATHNAME=test
 
 OUTPUT_DIR=`pwd`
 JOB_OUTPUT_DIR=$OUTPUT_DIR/job_output
@@ -18,7 +14,7 @@ cd $JOB_OUTPUT_DIR
 #-------------------------------------------------------------------------------
 # STEP: ReplaceReadGroup
 #-------------------------------------------------------------------------------
-STEP=ReplaceReadGroup
+STEP=Test
 mkdir -p $JOB_OUTPUT_DIR/$STEP
 
 
@@ -34,15 +30,14 @@ RGPL=`samtools view -H $BAM | grep '@RG' | gawk 'NR==1{ if (match($0,/PL:[ A-Za-
 
 #samtools view -H $BAM | sed "s/${RGPL}/Illumina/" | samtools reheader - $BAM > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
 
-if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bai ];then \
+if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/test_file.txt ];then \
 COMMAND="timestamp() {
   date +\"%Y-%m-%d %H:%M:%S\"
 }
 echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
 timestamp >> $LOG
-module load samtools/1.5 && cd $JOB_OUTPUT_DIR ;\
-samtools view -H $BAM | sed \"s/${RGPL}/Illumina/\" | samtools reheader -P -i - $BAM > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ; \
-samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bai
+cd $JOB_OUTPUT_DIR ;\
+echo \"Test job\" >  ${JOB_OUTPUT_DIR}/${STEP}/test_file.txt;
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
 timestamp >> $LOG" 
 
@@ -65,4 +60,3 @@ echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
 sbatch --job-name=replaceRG_${NOPATHNAME} --output=%x-%j.out --time=00:02:00 --mem=1G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID ;\
 fi
-

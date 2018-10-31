@@ -33,6 +33,7 @@ timestamp() {
 
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.log
 
+if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai ];then \
 COMMAND="timestamp() {
   date +\"%Y-%m-%d %H:%M:%S\"
 }
@@ -82,3 +83,12 @@ sbatch --job-name=sambamba_markDuplicates_index_${NOPATHNAME} --output=%x-%j.out
 echo $COMMAND >> $LOG
 echo "Submitted:" | sed $'s,.*,\e[96m&\e[m,' >> $LOG 
 echo "$(timestamp)" >> $LOG
+
+else echo "Skipping step :" $STEP
+COMMAND="echo \"Step already done\""
+echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
+echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
+
+sbatch --job-name=sambamba_markDuplicates_${NOPATHNAME} --output=%x-%j.out --time=00:02:00 --mem=1G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh \
+| awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID ;\
+fi
