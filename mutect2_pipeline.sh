@@ -255,6 +255,7 @@ for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/filter_mutect2
 #-------------------------------------------------------------------------------
 
 PREVIOUS=$STEP
+STEP=Concat_calls
 
 echo "Queuing"
 echo "Concat_calls Step:" 

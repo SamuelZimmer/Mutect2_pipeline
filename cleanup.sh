@@ -17,7 +17,16 @@ mkdir -p $OUTPUT_DIR/jobs
 
 JOB_DEPENDENCIES=$(cat ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.JOBID)
 
+mkdir -p $OUTPUT_DIR/logs
 LOG=$OUTPUT_DIR/logs/cleanup.log
+
+
+
+# Define a timestamp function
+timestamp() {
+  date +"%Y-%m-%d %H:%M:%S"
+}
+
 
 COMMAND="timestamp() {
   date +\"%Y-%m-%d %H:%M:%S\"

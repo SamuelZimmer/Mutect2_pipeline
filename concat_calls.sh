@@ -27,7 +27,7 @@ mkdir -p $JOB_OUTPUT_DIR/$STEP
 
 
 sleep 20
-JOB_DEPENDENCIES=$(sacct --format="JobID,JobName%30" | grep Filter_calls | grep ${NOPATHNAME} | cut -d ' ' -f 1 | sed ':a;N;$!ba;s/\n/,/g')
+JOB_DEPENDENCIES=$(sacct --format="JobID,JobName%60" | grep Filter_calls | grep ${NOPATHNAME} | cut -d ' ' -f 1 | sed ':a;N;$!ba;s/\n/,/g')
 
 # Define a timestamp function
 timestamp() {
@@ -81,7 +81,7 @@ echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 
 
-sbatch --job-name=Concat_calls_${NOPATHNAME} --output=%x-%j.out --time=24:00:00 --mem=8G \
+sbatch --job-name=Concat_calls_${NOPATHNAME} --output=%x-%j.out --time=1:00:00 --mem=8G \
 --dependency=afterok:$JOB_DEPENDENCIES ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID
 
