@@ -67,7 +67,7 @@ timestamp >> $LOG"
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 
-sbatch --job-name=recalibration_${NOPATHNAME} --output=%x-%j.out --time=120:00:00 \
+sbatch --job-name=recalibration_${NOPATHNAME} --output=%x-%j.out --time=1:00:00 \
 --mem=31G --cpus-per-task=20 --dependency=afterok:$JOB_DEPENDENCIES \
 ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID

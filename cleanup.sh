@@ -9,7 +9,6 @@ export NOPATHNAME=${NAME##*/}
 PREVIOUS=$2
 
 
-
 OUTPUT_DIR=`pwd`
 JOB_OUTPUT_DIR=$OUTPUT_DIR/job_output
 mkdir -p $JOB_OUTPUT_DIR
@@ -36,7 +35,7 @@ mv $JOB_OUTPUT_DIR/*/*.sh $OUTPUT_DIR/jobs/
 rm $JOB_OUTPUT_DIR/*/*.JOBID
 rm $JOB_OUTPUT_DIR/*/*/*.JOBID
 
-mv $JOB_OUTPUT_DIR/Recalibration/${NOPATHNAME}.bam* /netmount/ip29_home/zimmers/Mutect2/recalibrated/
+mv $JOB_OUTPUT_DIR/Recalibration/${NOPATHNAME}.ba* /netmount/ip29_home/zimmers/Mutect2/recalibrated/
 
 rm -fr $JOB_OUTPUT_DIR/ReplaceRG $JOB_OUTPUT_DIR/Sambamba_markDuplicates $JOB_OUTPUT_DIR/FixMate
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
@@ -47,7 +46,7 @@ echo "#!/bin/bash" > $OUTPUT_DIR/jobs/cleanup.sh
 echo "$COMMAND" >> $OUTPUT_DIR/jobs/cleanup.sh
 
 
-sbatch --job-name=Cleanup_${NOPATHNAME} --output=%x-%j.out --time=10:00 --mem=8G \
+sbatch --job-name=Cleanup_${NOPATHNAME} --output=%x-%j.out --time=10:00 --mem=2G \
 --dependency=afterok:$JOB_DEPENDENCIES $OUTPUT_DIR/jobs/cleanup.sh \
 
 echo $COMMAND >> $LOG

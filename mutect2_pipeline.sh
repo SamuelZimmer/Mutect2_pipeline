@@ -250,28 +250,28 @@ echo $(timestamp)
 
 for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
 
-# #-------------------------------------------------------------------------------
-# # STEP: Concat_calls
-# #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# STEP: Concat_calls
+#-------------------------------------------------------------------------------
 
-# PREVIOUS=$STEP
+PREVIOUS=$STEP
 
-# echo "Queuing"
-# echo "Concat_calls Step:" 
-# echo $(timestamp)
+echo "Queuing"
+echo "Concat_calls Step:" 
+echo $(timestamp)
 
-# bash ${MY_PATH}/concat_calls.sh $TUMOR $PREVIOUS
+bash ${MY_PATH}/concat_calls.sh $TUMOR $PREVIOUS
 
 
-# #-------------------------------------------------------------------------------
-# # STEP: Cleanup
-# #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# STEP: Cleanup
+#-------------------------------------------------------------------------------
 
-# PREVIOUS=$STEP
+PREVIOUS=$STEP
 
-# echo "Queuing"
-# echo "Cleanup Step:" 
-# echo $(timestamp)
+echo "Queuing"
+echo "Cleanup Step:" 
+echo $(timestamp)
 
-# bash ${MY_PATH}/cleanup.sh $TUMOR $PREVIOUS
+bash ${MY_PATH}/cleanup.sh $TUMOR $PREVIOUS
 
