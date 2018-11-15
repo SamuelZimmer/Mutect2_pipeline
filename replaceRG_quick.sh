@@ -50,7 +50,7 @@ timestamp >> $LOG"
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 
-sbatch --job-name=replaceRG_${NOPATHNAME} --output=%x-%j.out --time=4:00:00 --mem=30G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
+sbatch --job-name=replaceRG_${NOPATHNAME} --output=%x-%j.out --time=12:00:00 --mem=30G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID
 
 echo $COMMAND >> $LOG

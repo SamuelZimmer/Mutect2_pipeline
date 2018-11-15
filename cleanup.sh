@@ -36,17 +36,16 @@ timestamp >> $LOG
 
 mkdir -p $OUTPUT_DIR/logs
 mv $JOB_OUTPUT_DIR/*.out $OUTPUT_DIR/logs/
-mv ./*.out $OUTPUT_DIR/logs/
-mv $JOB_OUTPUT_DIR/*/*.log $OUTPUT_DIR/logs/
+mv $OUTPUT_DIR/*.out $OUTPUT_DIR/logs/
 
 mv $JOB_OUTPUT_DIR/*/*.sh $OUTPUT_DIR/jobs/
 
 rm $JOB_OUTPUT_DIR/*/*.JOBID
 rm $JOB_OUTPUT_DIR/*/*/*.JOBID
 
-mv $JOB_OUTPUT_DIR/Recalibration/${NOPATHNAME}.ba* /netmount/ip29_home/zimmers/Mutect2/recalibrated/
+mv $JOB_OUTPUT_DIR/Recalibration/*.ba* /netmount/ip29_home/zimmers/Mutect2/recalibrated/
 
-rm -fr $JOB_OUTPUT_DIR/ReplaceRG $JOB_OUTPUT_DIR/Sambamba_markDuplicates $JOB_OUTPUT_DIR/FixMate
+rm -fr $JOB_OUTPUT_DIR/ReplaceReadGroup $JOB_OUTPUT_DIR/Sambamba_markDuplicates $JOB_OUTPUT_DIR/FixMate
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
 timestamp >> $LOG"
 
@@ -55,7 +54,7 @@ echo "#!/bin/bash" > $OUTPUT_DIR/jobs/cleanup.sh
 echo "$COMMAND" >> $OUTPUT_DIR/jobs/cleanup.sh
 
 
-sbatch --job-name=Cleanup_${NOPATHNAME} --output=%x-%j.out --time=10:00 --mem=2G \
+sbatch --job-name=Cleanup_${NOPATHNAME} --output=%x-%j.out --time=24:00:00 --mem=2G \
 --dependency=afterok:$JOB_DEPENDENCIES $OUTPUT_DIR/jobs/cleanup.sh \
 
 echo $COMMAND >> $LOG
