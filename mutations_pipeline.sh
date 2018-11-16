@@ -214,6 +214,17 @@ bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $PREVIOU
 
 # bash ${MY_PATH}/conpair_verify.sh $TUMOR $NORMAL $PREVIOUS
 
+
+#-------------------------------------------------------------------------------
+# NovoBreak
+#-------------------------------------------------------------------------------
+PREVIOUS=$STEP
+echo "Queuing"
+echo "NovoBreak Steps:" 
+echo $(timestamp)
+
+bash ${MY_PATH}/NovoBreak/novoBreak_test.sh -t $TUMOR -n $NORMAL -r $REF $PREVIOUS
+
 #-------------------------------------------------------------------------------
 # Gatk_mutect2
 #-------------------------------------------------------------------------------
