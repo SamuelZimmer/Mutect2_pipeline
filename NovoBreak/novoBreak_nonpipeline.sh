@@ -61,7 +61,6 @@ then
    exit 1
 fi
 
-PREVIOUS=$1
 
 NAME=${BAM%.bam}
 NOPATHNAME=${NAME##*/}
@@ -81,8 +80,6 @@ JOB_OUTPUT_DIR=$OUTPUT_DIR/job_output
 STEP=NovoBreak
 mkdir -p $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}
 
-JOB_DEPENDENCIE1=$(cat ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.JOBID)
-JOB_DEPENDENCIE2=$(cat ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME2}.JOBID)
 
 # Define a timestamp function
 timestamp() {
@@ -100,8 +97,8 @@ timestamp >> $LOG
 module load java/1.8.0_121 bioinformatics/novoBreak/1.1.3rc && cd $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME} && \
 bash /cvmfs/bioinformatics.usherbrooke.ca/novoBreak/1.1.3rc/run_novoBreak.sh /cvmfs/bioinformatics.usherbrooke.ca/novoBreak/1.1.3rc \
 $REF \
-${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
-${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME2}.bam \
+$BAM \
+$BAM2 \
 45
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
 timestamp >> $LOG"
@@ -112,8 +109,8 @@ timestamp >> $LOG"
 
 echo "#!/bin/sh" > $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}.sh
 echo "$COMMAND" >> $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}.sh
-sbatch --job-name=novoBreak_${NOPATHNAME} --output=%x-%j.out --time=24:00:00 --cpus-per-task=45 --mem=256G \
---dependency=afterok:$JOB_DEPENDENCIE1:$JOB_DEPENDENCIE2 $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}.sh \
+sbatch --job-name=novoBreak_${NOPATHNAME} --output=%x-%j.out --time=48:00:00 --cpus-per-task=45 --mem=256G 
+$JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID
 
 
