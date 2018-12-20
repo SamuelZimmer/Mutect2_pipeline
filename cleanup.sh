@@ -27,16 +27,11 @@ timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
-
-COMMAND="timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-
-mkdir -p $OUTPUT_DIR/logs
+JOB1="mkdir -p $OUTPUT_DIR/logs
 mv $JOB_OUTPUT_DIR/*.out $OUTPUT_DIR/logs/
 mv $OUTPUT_DIR/*.out $OUTPUT_DIR/logs/
+mv $JOB_OUTPUT_DIR/*/*.log $OUTPUT_DIR/logs/
+mv $JOB_OUTPUT_DIR/*.log $OUTPUT_DIR/logs/
 
 mv $JOB_OUTPUT_DIR/*/*.sh $OUTPUT_DIR/jobs/
 
@@ -46,8 +41,27 @@ rm $JOB_OUTPUT_DIR/*/*/*.JOBID
 mv $JOB_OUTPUT_DIR/Recalibration/*.ba* /netmount/ip29_home/zimmers/Mutect2/recalibrated/
 
 rm -fr $JOB_OUTPUT_DIR/ReplaceReadGroup $JOB_OUTPUT_DIR/Sambamba_markDuplicates $JOB_OUTPUT_DIR/FixMate
+"
+
+COMMAND="timestamp() {
+  date +\"%Y-%m-%d %H:%M:%S\"
+}
+echo '$JOB1' >> $LOG
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE PROLOGUE' >> $LOG
+echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG
+$JOB1
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE EPILOGUE' >> $LOG
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG"
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG"
 
 #Write .sh script to be submitted with sbatch
 echo "#!/bin/bash" > $OUTPUT_DIR/jobs/cleanup.sh

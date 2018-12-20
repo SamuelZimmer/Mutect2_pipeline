@@ -90,21 +90,33 @@ timestamp() {
 }
 
 LOG=$JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${NOPATHNAME}.log
+JOB1="module load java/1.8.0_121 bioinformatics/novoBreak/1.1.3rc && cd $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME} && \
+bash /cvmfs/bioinformatics.usherbrooke.ca/novoBreak/1.1.3rc/run_novoBreak.sh /cvmfs/bioinformatics.usherbrooke.ca/novoBreak/1.1.3rc \
+$REF \
+${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
+${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME2}.bam \
+45"
 
 
 COMMAND="timestamp() {
   date +\"%Y-%m-%d %H:%M:%S\"
 }
+echo '$JOB1' >> $LOG
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE PROLOGUE' >> $LOG
 echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
 timestamp >> $LOG
-module load java/1.8.0_121 bioinformatics/novoBreak/1.1.3rc && cd $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME} && \
-bash /cvmfs/bioinformatics.usherbrooke.ca/novoBreak/1.1.3rc/run_novoBreak.sh /cvmfs/bioinformatics.usherbrooke.ca/novoBreak/1.1.3rc \
-$REF \
-${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
-${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME2}.bam \
-45
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG
+$JOB1
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE EPILOGUE' >> $LOG
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG"
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG"
 
 
 
@@ -112,7 +124,7 @@ timestamp >> $LOG"
 
 echo "#!/bin/sh" > $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}.sh
 echo "$COMMAND" >> $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}.sh
-sbatch --job-name=novoBreak_${NOPATHNAME} --output=%x-%j.out --time=24:00:00 --cpus-per-task=45 --mem=256G \
+sbatch --job-name=novoBreak_${NOPATHNAME} --output=%x-%j.out --time=48:00:00 --cpus-per-task=48 --mem=256G \
 --dependency=afterok:$JOB_DEPENDENCIE1:$JOB_DEPENDENCIE2 $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID
 

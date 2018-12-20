@@ -16,7 +16,6 @@ JOB_OUTPUT_DIR=$OUTPUT_DIR/job_output
 # JOB: fix_mate_by_coordinate_1_JOB_ID: fix_mate_by_coordinate
 #-------------------------------------------------------------------------------
 STEP=FixMate
-mkdir -p $JOB_OUTPUT_DIR/$STEP
 mkdir -p ${JOB_OUTPUT_DIR}/$STEP
 
 JOB_DEPENDENCIES=$(cat ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.JOBID)
@@ -28,23 +27,37 @@ timestamp() {
 }
 
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.log
-
-if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.sorted.bam ];then \
-COMMAND="timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-module load mugqic/java/openjdk-jdk1.7.0_60 mugqic/bvatools/1.4 mugqic/sambamba/0.6.6 && \
+JOB1="module load mugqic/java/openjdk-jdk1.7.0_60 mugqic/bvatools/1.4 mugqic/sambamba/0.6.6 && \
+cd ${JOB_OUTPUT_DIR}/$STEP && \
 java -XX:ParallelGCThreads=4 -Xmx30G -jar /cvmfs/soft.mugqic/CentOS6/software/bvatools/bvatools-1.4/bvatools-1.4-full.jar \
 groupfixmate \
 --level 1 \
 --bam ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
 --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam &&
 sambamba sort -t 12 -m 2GB --tmpdir="'$SLURM_TMPDIR'" \
-${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
+${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam"
+
+
+if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.sorted.bam ];then \
+COMMAND="timestamp() {
+  date +\"%Y-%m-%d %H:%M:%S\"
+}
+echo '$JOB1' >> $LOG
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE PROLOGUE' >> $LOG
+echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG
+$JOB1
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE EPILOGUE' >> $LOG
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG"
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG"
 
 #Write .sh script to be submitted with sbatch
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
@@ -52,7 +65,7 @@ echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 
 ##I have to check walltime and memory usage
 
-sbatch --job-name=fixMate_${NOPATHNAME} --output=%x-%j.out --time=48:00:00 --mem=31G --cpus-per-task=12 \
+sbatch --job-name=fixMate_${NOPATHNAME} --output=%x-%j.out --time=72:00:00 --mem=40G --cpus-per-task=12 \
 --dependency=afterok:$JOB_DEPENDENCIES ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID
 

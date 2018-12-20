@@ -35,16 +35,31 @@ RGPL=`samtools view -H $BAM | grep '@RG' | gawk 'NR==1{ if (match($0,/PL:[ A-Za-
 #samtools view -H $BAM | sed "s/${RGPL}/Illumina/" | samtools reheader - $BAM > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bai ];then \
+JOB1="module load samtools/1.5 && cd $JOB_OUTPUT_DIR ;\
+samtools view -H $BAM | sed \"s/${RGPL}/Illumina/\" | samtools reheader -P -i - $BAM > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ; \
+samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bai
+"
+
 COMMAND="timestamp() {
   date +\"%Y-%m-%d %H:%M:%S\"
 }
+echo '$JOB1' >> $LOG
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE PROLOGUE' >> $LOG
 echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
 timestamp >> $LOG
-module load samtools/1.5 && cd $JOB_OUTPUT_DIR ;\
-samtools view -H $BAM | sed \"s/${RGPL}/Illumina/\" | samtools reheader -P -i - $BAM > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ; \
-samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bai
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG
+$JOB1
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE EPILOGUE' >> $LOG
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG" 
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG"
+
 
 #Write .sh script to be submitted with sbatch
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh

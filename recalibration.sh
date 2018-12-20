@@ -24,7 +24,6 @@ cd $JOB_OUTPUT_DIR
 # STEP: recalibration
 #-------------------------------------------------------------------------------
 STEP=Recalibration
-mkdir -p $JOB_OUTPUT_DIR/$STEP
 mkdir -p ${JOB_OUTPUT_DIR}/$STEP
 
 JOB_DEPENDENCIES=$(cat ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.JOBID)
@@ -36,13 +35,8 @@ timestamp() {
 
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.log
 
-if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
-COMMAND="timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-module load mugqic/java/openjdk-jdk1.8.0_72 mugqic/GenomeAnalysisTK/3.7 samtools/1.5 && \
+JOB1="module load mugqic/java/openjdk-jdk1.8.0_72 mugqic/GenomeAnalysisTK/3.7 samtools/1.5 && \
+cd ${JOB_OUTPUT_DIR}/$STEP && \
 java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.7/GenomeAnalysisTK.jar \
   --analysis_type BaseRecalibrator \
   --num_cpu_threads_per_data_thread 20 \
@@ -60,8 +54,28 @@ java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cv
   --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam && \
 md5sum ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.md5 && \
 samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai
+"
+
+if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
+COMMAND="timestamp() {
+  date +\"%Y-%m-%d %H:%M:%S\"
+}
+echo '$JOB1' >> $LOG
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE PROLOGUE' >> $LOG
+echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG
+$JOB1
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE EPILOGUE' >> $LOG
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG"
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG"
 
 #Write .sh script to be submitted with sbatch
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh

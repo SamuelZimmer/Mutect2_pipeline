@@ -12,8 +12,6 @@ PREVIOUS=$3
 
 OUTPUT_DIR=`pwd`
 JOB_OUTPUT_DIR=$OUTPUT_DIR/job_output
-mkdir -p $OUTPUT_DIR
-cd $OUTPUT_DIR
 
 
 #-------------------------------------------------------------------------------
@@ -33,19 +31,34 @@ timestamp() {
 
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.log
 
-if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai ];then \
-COMMAND="timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-module load mugqic/samtools/1.3.1 mugqic/sambamba/0.6.5 && \
+JOB1="module load mugqic/samtools/1.3.1 mugqic/sambamba/0.6.5 && \
+cd ${JOB_OUTPUT_DIR}/$STEP && \
 sambamba markdup -t 5 \
   ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.sorted.bam \
   --tmpdir "'$SLURM_TMPDIR'" \
   ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
+"
+
+if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai ];then \
+COMMAND="timestamp() {
+  date +\"%Y-%m-%d %H:%M:%S\"
+}
+echo '$JOB1' >> $LOG
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE PROLOGUE' >> $LOG
+echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG
+$JOB1
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE EPILOGUE' >> $LOG
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG"
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG"
 
 #Write .sh script to be submitted with sbatch
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_markDup.sh
@@ -62,15 +75,30 @@ echo "$(timestamp)" >> $LOG
 
 JOB_DEPENDENCY2=$(cat ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_markDup.JOBID)
 
+JOB2="module load mugqic/samtools/1.3.1 && \
+cd ${JOB_OUTPUT_DIR}/$STEP && \
+samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam"
+
+
 COMMAND="timestamp() {
   date +\"%Y-%m-%d %H:%M:%S\"
 }
+echo '$JOB2' >> $LOG
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE PROLOGUE' >> $LOG
 echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
 timestamp >> $LOG
-module load mugqic/samtools/1.3.1 && \
-samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG
+$JOB2
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE EPILOGUE' >> $LOG
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG"
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG"
 
 #Write .sh script to be submitted with sbatch
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh

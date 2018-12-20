@@ -110,14 +110,7 @@ LOG=$JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${NOPATHNAME}_${CHR}.log
 #--cosmic /nfs3_ib/bourque-mp2.nfs/tank/nfs/bourque/nobackup/share/mugqic_dev/genomes/Homo_sapiens/hg1k_v37/annotations/b37_cosmic_v70_140903.vcf.gz \
 #--dbsnp /cvmfs/soft.mugqic/CentOS6/genomes/species/Homo_sapiens.GRCh37/annotations/Homo_sapiens.GRCh37.dbSNP142.vcf.gz
 
-
-if [ ! -f $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${CHR}.vcf.gz ];then \
-COMMAND="timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-ml gatk/4.0.8.1 && ml java/1.8.0_121 && cd $OUTPUT_DIR && \
+JOB1="ml gatk/4.0.8.1 && ml java/1.8.0_121 && cd $OUTPUT_DIR && \
 java -jar /cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/gatk/4.0.8.1/gatk-package-4.0.8.1-local.jar \
 Mutect2 \
 --reference $REF \
@@ -127,8 +120,28 @@ Mutect2 \
 --normal-sample $NORMALSAMPLE \
 -L $CHR \
 --output $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${CHR}.vcf.gz
+"
+
+if [ ! -f $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${CHR}.vcf.gz ];then \
+COMMAND="timestamp() {
+  date +\"%Y-%m-%d %H:%M:%S\"
+}
+echo '$JOB1' >> $LOG
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE PROLOGUE' >> $LOG
+echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG
+$JOB1
+echo '#######################################' >> $LOG
+echo 'SLURM FAKE EPILOGUE' >> $LOG
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG"
+timestamp >> $LOG
+scontrol show job \$SLURM_JOBID >> $LOG
+sstat -j \$SLURM_JOBID.batch >> $LOG
+echo '#######################################' >> $LOG"
 
 
 
