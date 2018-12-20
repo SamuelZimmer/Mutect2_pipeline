@@ -29,7 +29,7 @@ timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
-LOG=${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.log
+LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.log
 
 JOB1="module load mugqic/samtools/1.3.1 mugqic/sambamba/0.6.5 && \
 cd ${JOB_OUTPUT_DIR}/$STEP && \
@@ -77,7 +77,9 @@ JOB_DEPENDENCY2=$(cat ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_markDup.JOBID)
 
 JOB2="module load mugqic/samtools/1.3.1 && \
 cd ${JOB_OUTPUT_DIR}/$STEP && \
-samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam"
+samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
+if [ -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
+rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam"
 
 
 COMMAND="timestamp() {

@@ -33,7 +33,7 @@ timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
-LOG=${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.log
+LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.log
 
 JOB1="module load mugqic/java/openjdk-jdk1.8.0_72 mugqic/GenomeAnalysisTK/3.7 samtools/1.5 && \
 cd ${JOB_OUTPUT_DIR}/$STEP && \
@@ -54,6 +54,8 @@ java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cv
   --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam && \
 md5sum ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.md5 && \
 samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai
+if [ -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai ];then \
+rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam
 "
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \

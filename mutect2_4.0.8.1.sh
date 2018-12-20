@@ -103,7 +103,7 @@ timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
-LOG=$JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${NOPATHNAME}_${CHR}.log
+LOG=$JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${STEP}_${NOPATHNAME}_${CHR}.log
 
 #     [--dbsnp dbSNP.vcf] \
 #     [--cosmic COSMIC.vcf] \

@@ -26,16 +26,18 @@ timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
-LOG=${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.log
+LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.log
 JOB1="module load mugqic/java/openjdk-jdk1.7.0_60 mugqic/bvatools/1.4 mugqic/sambamba/0.6.6 && \
 cd ${JOB_OUTPUT_DIR}/$STEP && \
-java -XX:ParallelGCThreads=4 -Xmx30G -jar /cvmfs/soft.mugqic/CentOS6/software/bvatools/bvatools-1.4/bvatools-1.4-full.jar \
+java -XX:ParallelGCThreads=4 -Xmx40G -jar /cvmfs/soft.mugqic/CentOS6/software/bvatools/bvatools-1.4/bvatools-1.4-full.jar \
 groupfixmate \
 --level 1 \
 --bam ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
 --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam &&
 sambamba sort -t 12 -m 2GB --tmpdir="'$SLURM_TMPDIR'" \
-${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam"
+${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
+if [ -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
+rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam"
 
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.sorted.bam ];then \

@@ -105,6 +105,7 @@ bash ${MY_PATH}/replaceRG_quick.sh $TUMOR
 
 bash ${MY_PATH}/replaceRG_quick.sh $NORMAL
 
+sleep 0.5m
 
 #-------------------------------------------------------------------------------
 #Fix_mate_by_coordinate
@@ -121,6 +122,7 @@ bash ${MY_PATH}/fixMate.sh $TUMOR $PREVIOUS
 
 bash ${MY_PATH}/fixMate.sh $NORMAL $PREVIOUS
 
+sleep 0.5m
 
 #Indel Realigner could be added here
 
@@ -139,6 +141,7 @@ bash ${MY_PATH}/sambamba_markDuplicates.sh $TUMOR $REF $PREVIOUS
 
 bash ${MY_PATH}/sambamba_markDuplicates.sh $NORMAL $REF $PREVIOUS
 
+sleep 0.5m
 
 #-------------------------------------------------------------------------------
 # Recalibration
@@ -153,6 +156,8 @@ echo $(timestamp)
 bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $PREVIOUS
 
 bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $PREVIOUS
+
+sleep 0.5m
 
 # #-------------------------------------------------------------------------------
 # # Metrics
@@ -225,6 +230,8 @@ echo $(timestamp)
 
 bash ${MY_PATH}/NovoBreak/novoBreak_test.sh -t $TUMOR -n $NORMAL -r $REF $PREVIOUS
 
+sleep 0.5m
+
 #-------------------------------------------------------------------------------
 # Gatk_mutect2
 #-------------------------------------------------------------------------------
@@ -243,7 +250,7 @@ if [ ! -f fixed_chromosome.list ];then sed 's/chr//' chromosome.list > fixed_chr
 for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.1.sh -t $TUMOR -n $NORMAL \
 -r $REF -c $chromosome $PREVIOUS ; done
 
-
+sleep 0.5m
 
 #-------------------------------------------------------------------------------
 # STEP: Filter_calls
@@ -260,6 +267,8 @@ echo $(timestamp)
 
 for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
 
+sleep 0.5m
+
 #-------------------------------------------------------------------------------
 # STEP: Concat_calls
 #-------------------------------------------------------------------------------
@@ -273,6 +282,7 @@ echo $(timestamp)
 
 bash ${MY_PATH}/concat_calls.sh $TUMOR $PREVIOUS
 
+sleep 0.5m
 
 #-------------------------------------------------------------------------------
 # STEP: Cleanup
