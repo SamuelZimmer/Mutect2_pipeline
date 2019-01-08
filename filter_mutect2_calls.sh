@@ -33,7 +33,7 @@ timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
-LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}/${CHR}.log
+LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}_${CHR}.log
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}.vcf.gz ];then \
 COMMAND="timestamp() {
