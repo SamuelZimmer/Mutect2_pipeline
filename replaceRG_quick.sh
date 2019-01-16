@@ -62,7 +62,7 @@ echo '#######################################' >> $LOG"
 
 
 #Write .sh script to be submitted with sbatch
-echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
+echo '#!/bin/bash' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 
 sbatch --job-name=replaceRG_${NOPATHNAME} --output=%x-%j.out --time=12:00:00 --mem=30G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
@@ -74,7 +74,7 @@ echo "$(timestamp)" >> $LOG ;\
 
 else echo "Skipping step :" $STEP
 COMMAND="echo \"Step already done\""
-echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
+echo '#!/bin/bash' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
 
 sbatch --job-name=replaceRG_${NOPATHNAME} --output=%x-%j.out --time=00:02:00 --mem=1G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh \
