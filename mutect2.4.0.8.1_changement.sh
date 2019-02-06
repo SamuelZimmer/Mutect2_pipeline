@@ -15,7 +15,7 @@ where:
     -n normal bam file, .bai file must be located in same directory
     -t matching tumor bam file
     -r reference genome file
-    -c chromosome to analyse (this script runs one chromosome at the time -L )"
+    "
 
 
 #Fetching script arguments
@@ -30,8 +30,6 @@ while getopts ':ht:n:r:c:' option; do
 	     ;;
 	  r) REF=$OPTARG
 	     ;;
-    c) CHR=$OPTARG
-       ;;
     :) printf "missing argument for -%s\n" "$OPTARG" | red >&2
        echo "$usage" >&2
        exit 1
@@ -63,12 +61,6 @@ then
    echo "$usage" >&2
    exit 1
 fi
-if [ -z "$CHR" ]
-then
-   printf "missing chromosome -c\n" "$OPTARG" | red >&2
-   echo "$usage" >&2
-   exit 1
-fi
 
 #PREVIOUS=$1
 
@@ -86,7 +78,7 @@ NORMALSAMPLE=`samtools view -H $BAM2 | grep '@RG' | gawk 'NR==1{ if (match($0,/S
 OUTPUT_DIR=`pwd`
 JOB_OUTPUT_DIR=$OUTPUT_DIR/job_output
 
-
+####chr, Bam
 
 
 #-------------------------------------------------------------------------------
@@ -103,7 +95,7 @@ timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
-LOG=$JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${NOPATHNAME}_${CHR}.log
+LOG=/home/faurej/scratch/mutect/job2/minichromo.log
 
 #     [--dbsnp dbSNP.vcf] \
 #     [--cosmic COSMIC.vcf] \
@@ -121,22 +113,21 @@ ml gatk/4.0.8.1 && ml java/1.8.0_121 && cd $OUTPUT_DIR && \
 java -jar /cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/gatk/4.0.8.1/gatk-package-4.0.8.1-local.jar \
 Mutect2 \
 --reference $REF \
--I ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
--I ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME2}.bam \
+-I ${BAM} \
+-I ${BAM2} \
 --tumor-sample $TUMORSAMPLE \
 --normal-sample $NORMALSAMPLE \
--L $CHR \
---output $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${CHR}.vcf.gz
+--output $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/minichromo.vcf.gz
 echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
 timestamp >> $LOG"
 
 
 
 #Write .sh script to be submitted with sbatch
-echo "#!/bin/sh" > $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${CHR}.sh
-echo "$COMMAND" >> $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${CHR}.sh
-sbatch --job-name=mutect2_4.0_${CHR}_${NOPATHNAME} --output=%x-%j.out --time=24:00:00 --mem=31G $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${CHR}.sh \
-| awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}.JOBID
+echo "#!/bin/sh" > $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/minichromo.sh
+echo "$COMMAND" >> $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/minichromo.sh
+sbatch --job-name=mutect2_4.0_minichromo_${NOPATHNAME} -N 1 -n 4 --output=%x-%j.out --time=24:00:00 --mem=31G $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/minichromo.sh \
+| awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/minichromo.JOBID
 #--dependency=afterok:$JOB_DEPENDENCIE1:$JOB_DEPENDENCIE2 \
 
 echo $COMMAND >> $LOG
@@ -145,10 +136,10 @@ echo "$(timestamp)" >> $LOG
 
 else echo "Skipping step :" $STEP
 COMMAND="echo \"Step already done\""
-echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}_skipped.sh
-echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}_skipped.sh
+echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/minichromo_skipped.sh
+echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/minichromo_skipped.sh
 
 sbatch --job-name=mutect2_4.0_${NOPATHNAME} --output=%x-%j.out --time=00:02:00 \
---mem=1G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}_skipped.sh \
-| awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}.JOBID ;\
+--mem=1G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/minichromo_skipped.sh \
+| awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/minichromo.JOBID ;\
 fi
