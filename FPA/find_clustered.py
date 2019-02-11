@@ -7,16 +7,6 @@ import subprocess
 #vcf_file = "PD3890a_BRCA1_0.99946411.PASS.vcf.gz"
 #inclure interval gap en variable
 
-def moduleload():
-
-        subprocess.run(["bash", ThisScript_path+"moduleload.sh"])
-
-def align_fastas(cluster_nmb,outputdir):
-
-		subprocess.run(["bash", ThisScript_path+"align_files.sh"])
-##aligning mutated fasta and normal fasta with mafft
-
-
 def read_VCF_file(vcf_file):
 ##reading VCF file as panda dataframe
     VCF_df=pd.read_table(vcf_file,comment='#',header=None,skip_blank_lines=True)
@@ -26,14 +16,14 @@ def read_VCF_file(vcf_file):
 
 
 def dataframe_to_list(df):
-#this creates a list of pair of line numbers delimmiting clusters in dataframe 
+
     pos_list = df['POS'].values.tolist()
 
     return(pos_list)
 
+
 def find_clusters(vcf_file):
 
-#find line nmb for each cluster pairs
     pair=(0,0)
     cluster_nmb=0
     Pairs={cluster_nmb:pair}
@@ -103,10 +93,7 @@ def make_bed(vcf_file):
                             f2.write('\t'.join(interval))
     return
 
-def make_fasta(cluster_nmb):
-
-        subprocess.run(["bash",ThisScript_path+"make_mut_fasta.sh",cluster_nmb,ref_file,outputdir])
-
+def make_fasta(cluster_bed):
         return
 
 def align_seq(mut_fasta, normal_fasta):
@@ -145,6 +132,7 @@ def make_cluster_files(vcf_file, header_file):
 
                         
                     old_pos=ligne[1]
+
 #write last cluster
 
                     file_name = "cluster"+str(cluster_nmb)+".tmp.vcf"
@@ -154,24 +142,23 @@ def make_cluster_files(vcf_file, header_file):
                         f2.write("".join(lines))
                     
     return
-    
+
+
+     
          
 def main():
 
 #        print(find_clusters(vcf_file))
 #        make_cluster_files(vcf_file, header_file)
-         moduleload()
          make_bed(vcf_file)
-         
-
 
 ##args are reference_database_name, reference_file_path, vcf_file 
 if __name__ == '__main__':
-    if len(sys.argv) != 5:
-        print >> sys.stderr, "This Script need exactly 4 arguments; args are <vcf_file>, <header_file>, <reference.fa>, <outputdir>"
+    if len(sys.argv) != 3:
+        print >> sys.stderr, "This Script need exactly 2 arguments; args are <vcf_file>, <header_file>"
         exit(1)
     else:
-        ThisScript, vcf_file, header_file, reference , outputdir = sys.argv
+        ThisScript, vcf_file, header_file = sys.argv
         ThisScript_path = os.path.dirname(ThisScript)
         main()
 
