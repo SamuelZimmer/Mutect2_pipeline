@@ -5,6 +5,7 @@ import numpy as np
 import subprocess
 
 #vcf_file = "PD3890a_BRCA1_0.99946411.PASS.vcf.gz"
+#inclure interval gap en variable
 
 
 
@@ -19,14 +20,14 @@ class Cluster:
         self.mut_dict = mut_dict   
     
     def get_ref_sequence(self):
-        deletion_length=0
+        cluster_length=0
         for pos, mut in self.mut_dict.items():
 
-            if len(mut[0]) > 1:
-                deletion_length=deletion_length+(len(mut[0])-1)
-        interval=self.chrom+":"+str(self.start_pos - int(extension))+"-"+str(self.end_pos + int(extension) + deletion_length)
+            if len(mut[1]) > 1:
+                cluster_length=cluster_length+(len(mut[1])-1)
+                        
+        interval=self.chrom+":"+str(self.start_pos - int(extension))+"-"+str(self.end_pos + int(extension) + cluster_length)
         seq=(subprocess.check_output(["bash", ThisScript_path+"/getSequence.sh",reference,interval])).decode('utf-8')
-        print(len(seq))
         return(seq)
 
     def get_mutated_sequence(self,ref_seq):
@@ -60,31 +61,11 @@ class Cluster:
         print("".join(Seq))
         return("".join(Seq))
 
-    def make_fasta(self,seq_ref,seq_mut):
-        
-        fasta=">"+str(self.chrom)+"\t"+str(int(self.start_pos)-int(extension))+":"+str((int(self.end_pos)+int(extension)+self.deletion_length()))+"_reference_sequence"+"\n"+seq_ref+">"+str(self.chrom)+"\t"+str(int(self.start_pos)-int(extension))+":"+str((int(self.end_pos)+int(extension)+self.deletion_length()))+"_mutated_sequence"+"\n"+seq_mut
- 
-        return(fasta)
+def make_fasta(seq):
+
+    return
          
-    def deletion_length(self):
-        deletion_length=0
-        for pos, mut in self.mut_dict.items():
 
-            if len(mut[0]) > 1:
-                deletion_length=deletion_length+(len(mut[0])-1)
-        
-        return(deletion_length)
-    
-    def make_bed(self):
-
-        file_name = "cluster"+str(self.cluster_nmb)+".tmp.bed"
-        print(file_name)
-        interval=self.chrom,str(self.start_pos - int(extension)),str(self.end_pos + int(extension))
-        print("interval is: " + interval)
-        with open(file_name, "w") as f1:
-
-            f1.write('\t'.join(interval))
-        return
 def distance(pos1,pos2):
 
     pos1=int(pos1)
@@ -92,19 +73,16 @@ def distance(pos1,pos2):
     distance = abs(pos1 - pos2)
     return(distance)
 
-def write(text_string,output_file):
+def make_bed(self):
 
-        with open(output_file, "w") as f1:
-            f1.write(text_string)
-        return
+    file_name = "cluster"+str(self.cluster_nmb)+".tmp.bed"
+    print(file_name)
+    interval=self.chrom,str(self.start_pos - int(extension)),str(self.end_pos + int(extension))
+    print("interval is: " + interval)
+    with open(file_name, "w") as f1:
 
-def mafft_alignment(fasta_file,aligned_fasta_name):
-
-    subprocess.run(["bash",ThisScript_path+"/mafft.sh",fasta_file,aligned_fasta_name])
-    return
-
-
-
+        f1.write('\t'.join(interval))
+         
 def main():
 
         with open(vcf_file) as f1:
@@ -124,13 +102,7 @@ def main():
                         cluster=Cluster(chrom,start_pos,end_pos,pos_list,cluster_nmb,mut_dict)
                         print("this is cluster nmb: "+ str(cluster_nmb))
                         print(mut_dict)
-                        ref_seq=cluster.get_ref_sequence()
-                        mut_seq=cluster.get_mutated_sequence(ref_seq)
-                        fasta=cluster.make_fasta(ref_seq,mut_seq)
-                        fasta_name="cluster"+str(cluster_nmb)+".tmp.fasta"
-                        write(fasta,fasta_name)
-                        aligned_fasta_name="cluster"+str(cluster_nmb)+".aln.tmp.fasta"
-                        mafft_alignment(fasta_name,aligned_fasta_name)
+                        cluster.get_mutated_sequence(cluster.get_ref_sequence())
                         mut_dict={}
                         mut_dict[ligne[1]]=(ligne[3],ligne[4])
                         pos_list=[ligne[1]]
@@ -161,14 +133,7 @@ def main():
             cluster=Cluster(chrom,start_pos,end_pos,pos_list,cluster_nmb,mut_dict)
             print("this is cluster nmb: "+ str(cluster_nmb))
             print(mut_dict)
-            ref_seq=cluster.get_ref_sequence()
-            mut_seq=cluster.get_mutated_sequence(ref_seq)
-            fasta=cluster.make_fasta(ref_seq,mut_seq)
-            fasta_name="cluster"+str(cluster_nmb)+".tmp.fasta"
-            write(fasta,fasta_name)
-            aligned_fasta_name="cluster"+str(cluster_nmb)+".aln.tmp.fasta"
-            mafft_alignment(fasta_name,aligned_fasta_name)
-
+            cluster.get_mutated_sequence(cluster.get_ref_sequence())
 
 
 
