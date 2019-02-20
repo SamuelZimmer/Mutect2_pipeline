@@ -1,18 +1,13 @@
 import sys
 import os
-import pandas as pd
-import numpy as np
 import subprocess
-
-#vcf_file = "PD3890a_BRCA1_0.99946411.PASS.vcf.gz"
-#inclure interval gap en variable
-
+import argparse
 
 
 
 class Cluster:
     def __init__(self,chrom,start_pos,end_pos, pos_list,cluster_nmb,mut_dict):
-        self.chrom = chrom
+        self.chrom = str(chrom)
         self.start_pos = start_pos
         self.end_pos = end_pos
         self.pos_list = pos_list  
@@ -20,14 +15,14 @@ class Cluster:
         self.mut_dict = mut_dict   
     
     def get_ref_sequence(self):
-        cluster_length=0
+        deletion_length=0
         for pos, mut in self.mut_dict.items():
 
-            if len(mut[1]) > 1:
-                cluster_length=cluster_length+(len(mut[1])-1)
-                        
-        interval=self.chrom+":"+str(self.start_pos - int(extension))+"-"+str(self.end_pos + int(extension) + cluster_length)
+            if len(mut[0]) > 1:
+                deletion_length=deletion_length+(len(mut[0])-1)
+        interval=self.chrom+":"+str(self.start_pos - int(extension))+"-"+str(self.end_pos + int(extension) + deletion_length)
         seq=(subprocess.check_output(["bash", ThisScript_path+"/getSequence.sh",reference,interval])).decode('utf-8')
+        print(len(seq))
         return(seq)
 
     def get_mutated_sequence(self,ref_seq):
@@ -61,11 +56,31 @@ class Cluster:
         print("".join(Seq))
         return("".join(Seq))
 
-def make_fasta(seq):
-
-    return
+    def make_fasta(self,seq_ref,seq_mut):
+        
+        fasta=">"+str(self.chrom)+"\t"+str(int(self.start_pos)-int(extension))+":"+str((int(self.end_pos)+int(extension)+self.deletion_length()))+"_reference_sequence"+"\n"+seq_ref+">"+str(self.chrom)+"\t"+str(int(self.start_pos)-int(extension))+":"+str((int(self.end_pos)+int(extension)+self.deletion_length()))+"_mutated_sequence"+"\n"+seq_mut
+ 
+        return(fasta)
          
+    def deletion_length(self):
+        deletion_length=0
+        for pos, mut in self.mut_dict.items():
 
+            if len(mut[0]) > 1:
+                deletion_length=deletion_length+(len(mut[0])-1)
+        
+        return(deletion_length)
+    
+    def make_bed(self):
+
+        file_name = "cluster"+str(self.cluster_nmb)+".tmp.bed"
+        print(file_name)
+        interval=self.chrom,str(self.start_pos - int(extension)),str(self.end_pos + int(extension))
+        print("interval is: " + interval)
+        with open(file_name, "w") as f1:
+
+            f1.write('\t'.join(interval))
+        return
 def distance(pos1,pos2):
 
     pos1=int(pos1)
@@ -73,25 +88,40 @@ def distance(pos1,pos2):
     distance = abs(pos1 - pos2)
     return(distance)
 
-def make_bed(self):
+def write(text_string,output_file):
 
-    file_name = "cluster"+str(self.cluster_nmb)+".tmp.bed"
-    print(file_name)
-    interval=self.chrom,str(self.start_pos - int(extension)),str(self.end_pos + int(extension))
-    print("interval is: " + interval)
-    with open(file_name, "w") as f1:
+        with open(output_file, "w") as f1:
+            f1.write(text_string)
+        return
 
-        f1.write('\t'.join(interval))
-         
+def mafft_alignment(fasta_file,aligned_fasta_name):
+
+    subprocess.run(["bash",ThisScript_path+"/mafft.sh",fasta_file,aligned_fasta_name])
+    return
+
+def annotate_vcf(vcf_file,dist,output):
+
+#TODO: must change error redirecting to somekind of log file instead of /dev/null (the blackhole of linux)
+    subprocess.run(["bash",ThisScript_path+"/add_cluster_info.sh",vcf_file,dist,output])
+    return()
+
+
+
+
 def main():
-
-        with open(vcf_file) as f1:
+        print(reference)
+        print(extension)
+        annotate_vcf(vcf_file,dist,outputdir)
+        annotated_vcf_file=outputdir+vcf_file_name+".snpCluster.vcf"
+        print(annotated_vcf_file)
+        with open(annotated_vcf_file) as f1:
             old_pos=0
             cluster_nmb=0
             pos_list=[]
             mut_dict={}
             chrom=0
             start_pos=0
+            end_pos=0
             for line in f1:
                 if not line.startswith("#"):
                     ligne = line.split("\t")
@@ -102,7 +132,13 @@ def main():
                         cluster=Cluster(chrom,start_pos,end_pos,pos_list,cluster_nmb,mut_dict)
                         print("this is cluster nmb: "+ str(cluster_nmb))
                         print(mut_dict)
-                        cluster.get_mutated_sequence(cluster.get_ref_sequence())
+                        ref_seq=cluster.get_ref_sequence()
+                        mut_seq=cluster.get_mutated_sequence(ref_seq)
+                        fasta=cluster.make_fasta(ref_seq,mut_seq)
+                        fasta_name="cluster"+str(cluster_nmb)+".tmp.fasta"
+                        write(fasta,fasta_name)
+                        aligned_fasta_name="cluster"+str(cluster_nmb)+".aln.tmp.fasta"
+                        mafft_alignment(fasta_name,aligned_fasta_name)
                         mut_dict={}
                         mut_dict[ligne[1]]=(ligne[3],ligne[4])
                         pos_list=[ligne[1]]
@@ -130,22 +166,47 @@ def main():
                     old_pos=ligne[1]
 
                     end_pos=int(ligne[1])
+
             cluster=Cluster(chrom,start_pos,end_pos,pos_list,cluster_nmb,mut_dict)
             print("this is cluster nmb: "+ str(cluster_nmb))
             print(mut_dict)
-            cluster.get_mutated_sequence(cluster.get_ref_sequence())
+            ref_seq=cluster.get_ref_sequence()
+            mut_seq=cluster.get_mutated_sequence(ref_seq)
+            fasta=cluster.make_fasta(ref_seq,mut_seq)
+            fasta_name="cluster"+str(cluster_nmb)+".tmp.fasta"
+            write(fasta,fasta_name)
+            aligned_fasta_name="cluster"+str(cluster_nmb)+".aln.tmp.fasta"
+            mafft_alignment(fasta_name,aligned_fasta_name)
 
 
-
-        
-
-##args are reference_database_name, reference_file_path, vcf_file 
+#TODO:chose output directory
 if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        print >> sys.stderr, "This Script need exactly 3 arguments; args are <vcf_file>, <reference.fa>, <int(extension) size [int]>"
-        exit(1)
-    else:
-        ThisScript, vcf_file, reference, extension = sys.argv
-        ThisScript_path = os.path.dirname(ThisScript)
-        main()
+    parser=argparse.ArgumentParser()
+    optional = parser._action_groups.pop() #this will remove optional args to place them after required when outputing the usage
+    required = parser.add_argument_group('required arguments')
+    required.add_argument("-r","--reference", type=str, help="This is the reference genome used to identify mutations in the input vcf file", required=True)
+    required.add_argument("-v","--vcf_file", type=str, help="This is the input vcf, can not be in gzip format (please gunzip it first)", required=True)
+    optional.add_argument("-e","--extension", type=int, default="200", help="This will define how long you chose to extend the sequence on both side of the cluster [default=200]",required=False)
+    optional.add_argument("-d","--distance", type=str, default="10", help="This will define the maximum distance between two mutations to define a cluster [default=10]",required=False)
+    optional.add_argument("-o","--output", type=str, default="./", help="Chose were all intermediat and final files are output",required=False)
+    parser._action_groups.append(optional)
+
+    
+   # parser.parse_args(['-h'])
+    args=parser.parse_args()
+    print ("Input file: %s" % args.vcf_file)
+    reference=args.reference
+    vcf_file=args.vcf_file
+    vcf_file_name=os.path.basename(vcf_file)
+    print(vcf_file_name)
+    extension=args.extension
+    dist=args.distance
+    outputdir=args.output
+    
+    ThisScript= sys.argv[0]
+    ThisScript_path = os.path.dirname(ThisScript)
+
+    main()
+   
+    
 

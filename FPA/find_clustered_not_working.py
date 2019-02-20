@@ -56,7 +56,7 @@ class Cluster:
         print("".join(Seq))
         return("".join(Seq))
 
-    def make_fasta(self,seq_ref,seq_mut):
+    def make_fasta(self,seq_ref,seq_mut,outputdir):
         
         fasta=">"+str(self.chrom)+"\t"+str(int(self.start_pos)-int(extension))+":"+str((int(self.end_pos)+int(extension)+self.deletion_length()))+"_reference_sequence"+"\n"+seq_ref+">"+str(self.chrom)+"\t"+str(int(self.start_pos)-int(extension))+":"+str((int(self.end_pos)+int(extension)+self.deletion_length()))+"_mutated_sequence"+"\n"+seq_mut
  
@@ -94,15 +94,15 @@ def write(text_string,output_file):
             f1.write(text_string)
         return
 
-def mafft_alignment(fasta_file,aligned_fasta_name):
+def mafft_alignment(fasta_file,aligned_fasta_name,outputdir):
 
-    subprocess.run(["bash",ThisScript_path+"/mafft.sh",fasta_file,aligned_fasta_name])
+    subprocess.run(["bash",ThisScript_path+"/mafft.sh",fasta_file,aligned_fasta_name,outputdir])
     return
 
-def annotate_vcf(vcf_file,dist):
+def annotate_vcf(vcf_file,dist,outputdir):
 
 #TODO: must change error redirecting to somekind of log file instead of /dev/null (the blackhole of linux)
-    subprocess.run(["bash",ThisScript_path+"/add_cluster_info.sh",vcf_file,str(dist)])
+    subprocess.run(["bash",ThisScript_path+"/add_cluster_info.sh",vcf_file,dist,outputdir])
     return()
 
 
@@ -111,8 +111,8 @@ def annotate_vcf(vcf_file,dist):
 def main():
         print(reference)
         print(extension)
-        annotate_vcf(vcf_file,dist)
-        annotated_vcf_file=vcf_file[:-4]+".snpCluster.vcf"
+        annotate_vcf(vcf_file,dist,outputdir)
+        annotated_vcf_file=outputdir+vcf_file_name+".snpCluster.vcf"
         print(annotated_vcf_file)
         with open(annotated_vcf_file) as f1:
             old_pos=0
@@ -121,7 +121,7 @@ def main():
             mut_dict={}
             chrom=0
             start_pos=0
-
+            end_pos=0
             for line in f1:
                 if not line.startswith("#"):
                     ligne = line.split("\t")
@@ -134,11 +134,11 @@ def main():
                         print(mut_dict)
                         ref_seq=cluster.get_ref_sequence()
                         mut_seq=cluster.get_mutated_sequence(ref_seq)
-                        fasta=cluster.make_fasta(ref_seq,mut_seq)
-                        fasta_name="cluster"+str(cluster_nmb)+".tmp.fasta"
+                        fasta=cluster.make_fasta(ref_seq,mut_seq,outputdir)
+                        fasta_name=outputdir+"cluster"+str(cluster_nmb)+".tmp.fasta"
                         write(fasta,fasta_name)
                         aligned_fasta_name="cluster"+str(cluster_nmb)+".aln.tmp.fasta"
-                        mafft_alignment(fasta_name,aligned_fasta_name)
+                        mafft_alignment(fasta_name,aligned_fasta_name,outputdir)
                         mut_dict={}
                         mut_dict[ligne[1]]=(ligne[3],ligne[4])
                         pos_list=[ligne[1]]
@@ -172,14 +172,14 @@ def main():
             print(mut_dict)
             ref_seq=cluster.get_ref_sequence()
             mut_seq=cluster.get_mutated_sequence(ref_seq)
-            fasta=cluster.make_fasta(ref_seq,mut_seq)
+            fasta=cluster.make_fasta(ref_seq,mut_seq,outputdir)
             fasta_name="cluster"+str(cluster_nmb)+".tmp.fasta"
             write(fasta,fasta_name)
             aligned_fasta_name="cluster"+str(cluster_nmb)+".aln.tmp.fasta"
             mafft_alignment(fasta_name,aligned_fasta_name)
 
 
-
+#TODO:chose output directory
 if __name__ == '__main__':
     parser=argparse.ArgumentParser()
     optional = parser._action_groups.pop() #this will remove optional args to place them after required when outputing the usage
@@ -187,7 +187,8 @@ if __name__ == '__main__':
     required.add_argument("-r","--reference", type=str, help="This is the reference genome used to identify mutations in the input vcf file", required=True)
     required.add_argument("-v","--vcf_file", type=str, help="This is the input vcf, can not be in gzip format (please gunzip it first)", required=True)
     optional.add_argument("-e","--extension", type=int, default="200", help="This will define how long you chose to extend the sequence on both side of the cluster [default=200]",required=False)
-    optional.add_argument("-d","--distance", type=int, default="10", help="This will define the maximum distance between two mutations to define a cluster [default=10]",required=False)
+    optional.add_argument("-d","--distance", type=str, default="10", help="This will define the maximum distance between two mutations to define a cluster [default=10]",required=False)
+    optional.add_argument("-o","--output", type=str, default="./", help="Chose were all intermediat and final files are output",required=False)
     parser._action_groups.append(optional)
 
     
@@ -196,8 +197,11 @@ if __name__ == '__main__':
     print ("Input file: %s" % args.vcf_file)
     reference=args.reference
     vcf_file=args.vcf_file
+    vcf_file_name=os.path.basename(vcf_file)
+    print(vcf_file_name)
     extension=args.extension
     dist=args.distance
+    outputdir=args.output
     
     ThisScript= sys.argv[0]
     ThisScript_path = os.path.dirname(ThisScript)
