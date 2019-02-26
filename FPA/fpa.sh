@@ -6,4 +6,4 @@ OUTDIR=$2
 OUTFILE=$3
 
 
-fpa --scan --pair ${OUTDIR}/${INPUT} --verbose --long-output
+fpa --scan --pair ${OUTDIR}/${INPUT} --verbose --long-output > $OUTDIR/$OUTFILE

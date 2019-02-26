@@ -6,4 +6,4 @@ OUT=$3
 
 NAME=${VCF##*/}
 
-bgzip $VCF 2> /dev/null ; tabix -f ${VCF}.gz ; zcat ${VCF}.gz | vcf-annotate --filter c=2,$DISTANCE 2> /dev/null | grep "SnpCluster" | grep -v "#" > ${OUT}/${NAME}.snpCluster.vcf 
+bgzip $VCF 2> /dev/null ; tabix -f ${VCF}.gz ; zcat ${VCF}.gz | vcf-annotate --filter c=2,$DISTANCE 2> /dev/null | grep "SnpCluster" | grep -v "#" > ${OUT}/${NAME%.vcf}.snpCluster.vcf 
