@@ -15,17 +15,18 @@ class Cluster:
         self.mut_dict = mut_dict   
     
     def get_ref_sequence(self):
-        deletion_length=0
-        for pos, mut in self.mut_dict.items():
+        # deletion_length=0
+        # for pos, mut in self.mut_dict.items():
 
-            if len(mut[0]) > 1:
-                deletion_length=deletion_length+(len(mut[0])-1)
-        interval=self.chrom+":"+str(self.start_pos - int(extension))+"-"+str(self.end_pos + int(extension) + deletion_length)
+        #     if len(mut[0]) > 1:
+        #         deletion_length=deletion_length+(len(mut[0])-1)
+        # interval=self.chrom+":"+str(self.start_pos - int(extension))+"-"+str(self.end_pos + int(extension) + deletion_length)
+        interval=self.chrom+":"+str(self.start_pos - int(extension))+"-"+str(self.end_pos + int(extension) + self.deletion_length())
         seq=(subprocess.check_output(["bash", ThisScript_path+"/getSequence.sh",reference,interval])).decode('utf-8')
         print(len(seq))
         return(seq)
 
-#This function insert the different mutations (indels and SNVs ) 
+#This function inserts the different mutations (indels and SNVs ) 
 #into the refence sequence (this sequence can be obtained using the get_get_ref_sequence function)
     def get_mutated_sequence(self,ref_seq):
         
@@ -91,11 +92,11 @@ class Cluster:
 
 #This fonction calculates the distance between two positions
 def distance(pos1,pos2):
-
-    pos1=int(pos1)
-    pos2=int(pos2)
-    distance = abs(pos1 - pos2)
-    return(distance)
+    # pos1=int(pos1)
+    # pos2=int(pos2)
+    # distance = abs(pos1 - pos2)
+    # return(distance)
+    return(abs(int(pos1)-int(pos2)))
 
 #This fonction will write a string to a certain output_file
 def write(text_string,output_file):
@@ -117,14 +118,19 @@ def annotate_vcf(vcf_file,dist,outputdir):
     subprocess.run(["bash",ThisScript_path+"/add_cluster_info.sh",vcf_file,dist,outputdir])
     return()
 
+#This will call the four point aligner
+#TODO add filter step
+def fpa(input_file,outputdir,fpa_results):
+    subprocess.run(["bash",ThisScript_path+"/fpa.sh",input_file,outputdir,fpa_results])
+    return()
+    
 
-
-
+#TODO seperate the fpa for the for loop because conflicting module loads make it alot longer to execute
 def main():
         print(reference)
         print(extension)
         annotate_vcf(vcf_file,dist,outputdir)
-        annotated_vcf_file=outputdir+vcf_file_name+".snpCluster.vcf"
+        annotated_vcf_file=outputdir+vcf_file_name.rsplit('.', 1)[0]+".snpCluster.vcf"
         print(annotated_vcf_file)
         with open(annotated_vcf_file) as f1:
             old_pos=0
@@ -151,6 +157,8 @@ def main():
                         write(fasta,fasta_name)
                         aligned_fasta_name="cluster"+str(cluster_nmb)+".aln.tmp.fasta"
                         mafft_alignment(fasta_name,aligned_fasta_name,outputdir)
+                        fpa_results="cluster"+str(cluster_nmb)+".fpa.results"
+                        fpa(aligned_fasta_name,outputdir,fpa_results)
                         mut_dict={}
                         mut_dict[ligne[1]]=(ligne[3],ligne[4])
                         pos_list=[ligne[1]]
@@ -189,6 +197,8 @@ def main():
             write(fasta,fasta_name)
             aligned_fasta_name="cluster"+str(cluster_nmb)+".aln.tmp.fasta"
             mafft_alignment(fasta_name,aligned_fasta_name,outputdir)
+            fpa_results="cluster"+str(cluster_nmb)+".fpa.results"
+            fpa(aligned_fasta_name,outputdir,fpa_results)
 
 
 #TODO:chose output directory
