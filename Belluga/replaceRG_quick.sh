@@ -27,6 +27,7 @@ timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
+USAGE_LOG=LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.usage.log
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.log
 
 RGPL=`samtools view -H $BAM | grep '@RG' | gawk 'NR==1{ if (match($0,/PL:[ A-Za-z0-9_-]*/,m)) print m[0] }' | sed 's/PL://'`
@@ -40,25 +41,9 @@ samtools view -H $BAM | sed \"s/${RGPL}/Illumina/\" | samtools reheader -P -i - 
 samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bai
 "
 
-COMMAND="timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo '$JOB1' >> $LOG
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE PROLOGUE' >> $LOG
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG
-$JOB1
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE EPILOGUE' >> $LOG
-echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG"
+COMMAND="
+/cvmfs/soft.computecanada.ca/nix/var/nix/profiles/16.09/bin/time -o $USAGE_LOG -f 'Max Memory: %M Kb\nAverage Memory: %K Kb\nNumber of Swaps: %W \nElapsed Real Time: %E [hours:minutes:seconds]' $JOB1
+"
 
 
 #Write .sh script to be submitted with sbatch
