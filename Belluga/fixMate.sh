@@ -26,9 +26,10 @@ timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
+USAGE_LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.usage.log
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.log
-JOB1="module load mugqic/java/openjdk-jdk1.7.0_60 mugqic/bvatools/1.4 mugqic/sambamba/0.6.6 && \
-cd ${JOB_OUTPUT_DIR}/$STEP && \
+
+JOB1="
 java -XX:ParallelGCThreads=4 -Xmx40G -jar /cvmfs/soft.mugqic/CentOS6/software/bvatools/bvatools-1.4/bvatools-1.4-full.jar \
 groupfixmate \
 --level 1 \
@@ -41,25 +42,10 @@ rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam"
 
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.sorted.bam ];then \
-COMMAND="timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo '$JOB1' >> $LOG
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE PROLOGUE' >> $LOG
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG
-$JOB1
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE EPILOGUE' >> $LOG
-echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG"
+COMMAND="module load mugqic/java/openjdk-jdk1.7.0_60 mugqic/bvatools/1.4 mugqic/sambamba/0.6.6 && \
+cd ${JOB_OUTPUT_DIR}/$STEP && \
+/cvmfs/soft.computecanada.ca/nix/var/nix/profiles/16.09/bin/time -o $USAGE_LOG -f 'Max Memory: %M Kb\nAverage Memory: %K Kb\nNumber of Swaps: %W \nElapsed Real Time: %E [hours:minutes:seconds]' $JOB1
+"
 
 #Write .sh script to be submitted with sbatch
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
