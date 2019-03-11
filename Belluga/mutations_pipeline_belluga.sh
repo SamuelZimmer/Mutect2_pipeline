@@ -21,7 +21,7 @@ where:
 #Reference.fa and must have .fai in the same directory
 
 #Fetching script arguments
-while getopts ':ht:n:r:k:2:' option; do
+while getopts ':ht:n:r:k:2:3:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -30,11 +30,13 @@ while getopts ':ht:n:r:k:2:' option; do
        ;;
     t) TUMOR=$OPTARG
 	     ;;
-	r) REF=$OPTARG
+	 r) REF=$OPTARG
 	     ;;
     k) KNOWNSITES1=$OPTARG
        ;;
     2) KNOWNSITES2=$OPTARG
+       ;;
+    3) KNOWNSITES3=$OPTARG
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" | red >&2
        echo "$usage" >&2
@@ -124,7 +126,6 @@ bash ${MY_PATH}/fixMate.sh $NORMAL $PREVIOUS
 
 sleep 0.5m
 
-#Indel Realigner could be added here
 
 #-------------------------------------------------------------------------------
 # Sambamba_markDuplicates
@@ -153,71 +154,11 @@ echo "Queuing"
 echo "${STEP} Step:" 
 echo $(timestamp)
 
-bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $PREVIOUS
+bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
 
-bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $PREVIOUS
+bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
 
 sleep 0.5m
-
-# #-------------------------------------------------------------------------------
-# # Metrics
-# #-------------------------------------------------------------------------------
-
-# echo "Queuing"
-# echo "Metrics Steps:" 
-# echo $(timestamp)
-
-# bash ${MY_PATH}/metrics_V.0.1.sh $TUMOR $REF $STEP
-
-# bash ${MY_PATH}/metrics_V.0.1.sh $NORMAL $REF $STEP
-
-# #-------------------------------------------------------------------------------
-# # Callable_loci
-# #-------------------------------------------------------------------------------
-# echo "Queuing"
-# echo "Callable_loci Step:" 
-# echo $(timestamp)
-
-# bash ${MY_PATH}/callable_loci_V.0.1.sh $TUMOR $REF $STEP
-
-# bash ${MY_PATH}/callable_loci_V.0.1.sh $NORMAL $REF $STEP
-
-# #-------------------------------------------------------------------------------
-# # Extract_common_snp_freq
-# #-------------------------------------------------------------------------------
-
-# echo "Queuing"
-# echo "Extract_common_snp_freq Step:" 
-# echo $(timestamp)
-
-# bash ${MY_PATH}/extract_common_snp_V.0.1.sh $TUMOR $REF $STEP
-
-# bash ${MY_PATH}/extract_common_snp_V.0.1.sh $NORMAL $REF $STEP
-
-# #-------------------------------------------------------------------------------
-# # Conpair
-# #-------------------------------------------------------------------------------
-# #to be tested
-
-# echo "Queuing"
-# echo "Conpair Step:" 
-# echo $(timestamp)
-
-# bash ${MY_PATH}/conpair.sh $TUMOR $REF $STEP
-
-# bash ${MY_PATH}/conpair.sh $NORMAL $REF $STEP
-
-# #-------------------------------------------------------------------------------
-# # Conpair_verify
-# #-------------------------------------------------------------------------------
-# #to be tested
-# PREVIOUS=Conpair
-
-# echo "Queuing"
-# echo "Conpair_verify Step:" 
-# echo $(timestamp)
-
-# bash ${MY_PATH}/conpair_verify.sh $TUMOR $NORMAL $PREVIOUS
 
 
 #-------------------------------------------------------------------------------
@@ -228,7 +169,7 @@ echo "Queuing"
 echo "NovoBreak Steps:" 
 echo $(timestamp)
 
-bash ${MY_PATH}/NovoBreak/novoBreak_test.sh -t $TUMOR -n $NORMAL -r $REF $PREVIOUS
+bash ${MY_PATH}/NovoBreak/novoBreak.sh -t $TUMOR -n $NORMAL -r $REF $PREVIOUS
 
 sleep 0.5m
 
@@ -288,11 +229,11 @@ sleep 0.5m
 # STEP: Cleanup
 #-------------------------------------------------------------------------------
 
-PREVIOUS=$STEP
+# PREVIOUS=$STEP
 
-echo "Queuing"
-echo "Cleanup Step:" 
-echo $(timestamp)
+# echo "Queuing"
+# echo "Cleanup Step:" 
+# echo $(timestamp)
 
-bash ${MY_PATH}/cleanup.sh $TUMOR $PREVIOUS
+# bash ${MY_PATH}/cleanup.sh $TUMOR $PREVIOUS
 

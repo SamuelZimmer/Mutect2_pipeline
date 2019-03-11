@@ -12,23 +12,14 @@ KNOWNSITES1=$3
 #/home/zimmers/projects/def-jacquesp/zimmers/gits/Mutect2_pipeline/genome_files/annotations/dbSnp_All_20180423.vcf.gz
 KNOWNSITES2=$4
 #/home/zimmers/projects/def-jacquesp/zimmers/gits/Mutect2_pipeline/genome_files/annotations/Mills_and_1000G_gold_standard.indels.b37.vcf.gz
-KNOWNSITES3=$5
+#KNOWNSITES2=$5
 #/home/zimmers/projects/def-jacquesp/zimmers/gits/Mutect2_pipeline/genome_files/annotations/gnomad.genomes.r2.1.sites.vcf.gz
-PREVIOUS=$6
+PREVIOUS=$5
 
 OUTPUT_DIR=`pwd`
 JOB_OUTPUT_DIR=$OUTPUT_DIR/job_output
 mkdir -p $JOB_OUTPUT_DIR
 cd $JOB_OUTPUT_DIR
-
-MY_PATH="`dirname \"$0\"`" 
-MY_PATH="`( cd \"$MY_PATH\" && pwd )`"
-if [ -z "$MY_PATH" ] ; then
-
-  # error; for some reason, the path is not accessible
-  # to the script (e.g. permissions re-evaled after suid)
-  exit 1  # fail
-fi
 
 #-------------------------------------------------------------------------------
 # STEP: recalibration
@@ -54,7 +45,6 @@ java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cv
   --reference_sequence $REF  \
   --knownSites $KNOWNSITES1 \
   --knownSites $KNOWNSITES2 \
-  --knownSites $KNOWNSITES3 \
   --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp && \
 java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.7/GenomeAnalysisTK.jar \
   --analysis_type PrintReads \
@@ -67,12 +57,11 @@ md5sum ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam > ${JOB_OUTPUT_DIR}/${STEP}/$
 samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai
 if [ -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai ];then \
 rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam
-fi
 "
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
 COMMAND="module load mugqic/java/openjdk-jdk1.8.0_72 mugqic/GenomeAnalysisTK/3.7 samtools/1.5 && cd ${JOB_OUTPUT_DIR}/$STEP && \
-$JOB1
+/cvmfs/soft.computecanada.ca/nix/var/nix/profiles/16.09/bin/time -o $USAGE_LOG -f 'Max Memory: %M Kb\nAverage Memory: %K Kb\nNumber of Swaps: %W \nElapsed Real Time: %E [hours:minutes:seconds]' $JOB1
 "
 
 #Write .sh script to be submitted with sbatch
@@ -97,17 +86,3 @@ sbatch --job-name=recalibration_${NOPATHNAME} --output=%x-%j.out --time=00:02:00
 --mem=1G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID ;\
 fi
-
-##this will get job usage using seff
-
-JOBID=$(cat ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID)
-USAGE_LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.usage.log
-
-COMMAND="cd ${JOB_OUTPUT_DIR}/$STEP && \
-bash ${MY_PATH}/seff.sh $JOBID $USAGE_LOG
-"
-
-echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_usage.sh
-echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_usage.sh
-
-sbatch --job-name=recalibration_usage --output=%x-%j.out --time=00:02:00 --mem=1G --dependency=afterok:$JOBID ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_usage.sh

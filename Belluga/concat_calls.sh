@@ -27,23 +27,18 @@ mkdir -p $JOB_OUTPUT_DIR/$STEP
 
 
 sleep 20
-JOB_DEPENDENCIES=$(sacct --format="JobID,JobName%60" | grep Filter_calls | grep ${NOPATHNAME} | cut -d ' ' -f 1 | sed ':a;N;$!ba;s/\n/,/g')
+JOB_DEPENDENCIES=$(sacct --format="JobID,JobName%60" | grep filter_calls | grep ${NOPATHNAME} | cut -d ' ' -f 1 | sed ':a;N;$!ba;s/\n/,/g')
 
 # Define a timestamp function
 timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
+USAGE_LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.usage.log
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.log
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.vcf.gz ];then \
-COMMAND="timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-module load mugqic/bcftools/1.3 mugqic/htslib/1.3 mugqic/vt/0.57 && cd $OUTPUT_DIR && \
-bcftools \
+JOB1="bcftools \
 concat -a \
 ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}/1.vcf.gz \
 ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}/2.vcf.gz \
@@ -72,9 +67,11 @@ ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}/Y.vcf.gz \
 ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}/MT.vcf.gz \
 | bgzip -cf \
  > \
-${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.vcf.gz && tabix -pvcf ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.vcf.gz 
-echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG"
+${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.vcf.gz && tabix -pvcf ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.vcf.gz
+"
+COMMAND="module load mugqic/bcftools/1.3 mugqic/htslib/1.3 mugqic/vt/0.57 && cd $JOB_OUTPUT_DIR/$STEP && \
+/cvmfs/soft.computecanada.ca/nix/var/nix/profiles/16.09/bin/time -o $USAGE_LOG -f 'Max Memory: %M Kb\nAverage Memory: %K Kb\nNumber of Swaps: %W \nElapsed Real Time: %E [hours:minutes:seconds]' $JOB1
+"
 
 #Write .sh script to be submitted with sbatch
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
@@ -95,7 +92,7 @@ COMMAND="echo \"Step already done\""
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
 
-sbatch --job-name=recalibration_${NOPATHNAME} --output=%x-%j.out --time=00:02:00 \
+sbatch --job-name=Concat_calls_${NOPATHNAME} --output=%x-%j.out --time=00:02:00 \
 --mem=1G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID ;\
 fi

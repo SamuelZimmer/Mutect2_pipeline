@@ -73,7 +73,14 @@ OUTPUT_DIR=`pwd`
 JOB_OUTPUT_DIR=$OUTPUT_DIR/job_output
 
 
+MY_PATH="`dirname \"$0\"`" 
+MY_PATH="`( cd \"$MY_PATH\" && pwd )`"
+if [ -z "$MY_PATH" ] ; then
 
+  # error; for some reason, the path is not accessible
+  # to the script (e.g. permissions re-evaled after suid)
+  exit 1  # fail
+fi
 
 #-------------------------------------------------------------------------------
 # STEP: NovoBreak
@@ -88,37 +95,19 @@ JOB_DEPENDENCIE2=$(cat ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME2}.JOBID)
 timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
-
+USAGE_LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.usage.log
 LOG=$JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${STEP}_${NOPATHNAME}.log
-JOB1="module load java/1.8.0_121 bioinformatics/novoBreak/1.1.3rc && cd $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME} && \
+
+JOB1="
 bash /cvmfs/bioinformatics.usherbrooke.ca/novoBreak/1.1.3rc/run_novoBreak.sh /cvmfs/bioinformatics.usherbrooke.ca/novoBreak/1.1.3rc \
 $REF \
 ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
 ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME2}.bam \
 45"
 
-
-COMMAND="timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo '$JOB1' >> $LOG
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE PROLOGUE' >> $LOG
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG
+COMMAND="module load java/1.8.0_121 bioinformatics/novoBreak/1.1.3rc && cd $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME} && \
 $JOB1
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE EPILOGUE' >> $LOG
-echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG"
-
-
+"
 
 #Write .sh script to be submitted with sbatch
 
@@ -132,3 +121,17 @@ sbatch --job-name=novoBreak_${NOPATHNAME} --output=%x-%j.out --time=48:00:00 --c
 echo $COMMAND >> $LOG
 echo "Submitted:" | sed $'s,.*,\e[96m&\e[m,' >> $LOG 
 echo "$(timestamp)" >> $LOG
+
+##this will get job usage using seff
+
+JOBID=$(cat ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID)
+USAGE_LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.usage.log
+
+COMMAND="cd ${JOB_OUTPUT_DIR}/$STEP && \
+bash ${MY_PATH}/../seff.sh $JOBID $USAGE_LOG
+"
+
+echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_usage.sh
+echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_usage.sh
+
+sbatch --job-name=novobreak_usage --output=%x-%j.out --time=00:02:00 --mem=1G --dependency=afterok:$JOBID ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_usage.sh
