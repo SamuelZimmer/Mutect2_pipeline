@@ -37,7 +37,8 @@ groupfixmate \
 sambamba sort -t 12 -m 2GB --tmpdir="'$SLURM_TMPDIR'" \
 ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
 if [ -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
-rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam"
+rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam
+fi"
 
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.sorted.bam ];then \

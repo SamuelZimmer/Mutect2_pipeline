@@ -79,7 +79,8 @@ JOB2="module load mugqic/samtools/1.3.1 && \
 cd ${JOB_OUTPUT_DIR}/$STEP && \
 samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
 if [ -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
-rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam"
+rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam
+fi"
 
 
 COMMAND="timestamp() {
