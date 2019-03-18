@@ -34,10 +34,11 @@ groupfixmate \
 --level 1 \
 --bam ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
 --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam &&
-sambamba sort -t 12 -m 2GB --tmpdir="'$SLURM_TMPDIR'" \
+sambamba sort -t 40 -m 1GB --tmpdir="'$SLURM_TMPDIR'" \
 ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
 if [ -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
-rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam"
+rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam
+fi"
 
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.sorted.bam ];then \
@@ -67,7 +68,7 @@ echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 
 ##I have to check walltime and memory usage
 
-sbatch --job-name=fixMate_${NOPATHNAME} --output=%x-%j.out --time=72:00:00 --mem=40G --cpus-per-task=12 \
+sbatch --job-name=fixMate_${NOPATHNAME} --output=%x-%j.out --time=72:00:00 --mem=40G --cpus-per-task=40 \
 --dependency=afterok:$JOB_DEPENDENCIES ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID
 

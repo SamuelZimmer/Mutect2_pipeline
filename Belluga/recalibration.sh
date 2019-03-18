@@ -71,7 +71,7 @@ fi
 "
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
-COMMAND="module load mugqic/java/openjdk-jdk1.8.0_72 mugqic/GenomeAnalysisTK/3.7 samtools/1.5 && cd ${JOB_OUTPUT_DIR}/$STEP && \
+COMMAND="module load mugqic/java/openjdk-jdk1.8.0_72 mugqic/GenomeAnalysisTK/3.7 samtools/1.9 && cd ${JOB_OUTPUT_DIR}/$STEP && \
 $JOB1
 "
 

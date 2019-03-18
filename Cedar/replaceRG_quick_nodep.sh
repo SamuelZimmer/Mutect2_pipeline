@@ -4,7 +4,7 @@
 
 #alias cyan="sed $'s,.*,\e[96m&\e[m,'"
 
-module load samtools/1.5
+module load samtools/1.9
 
 export BAM=$1
 export NAME=${BAM%.bam}
@@ -33,7 +33,7 @@ RGPL= `samtools view -H $BAM | grep '@RG' | gawk 'NR==1{ if (match($0,/PL:[ A-Za
 
 
 #samtools view -H $BAM | sed "s/${RGPL}/Illumina/" | samtools reheader - $BAM > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
-JOB1="module load samtools/1.5 && cd $JOB_OUTPUT_DIR \
+JOB1="module load samtools/1.9 && cd $JOB_OUTPUT_DIR \
 samtools view -H $BAM | sed \"s/${RGPL}/Illumina/\" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_header.sam ; \
 samtools reheader -P -i ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_header.sam $BAM > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ; \
 rm ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_header.sam \

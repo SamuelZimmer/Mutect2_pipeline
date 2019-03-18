@@ -79,7 +79,7 @@ NAME2=${BAM2%.bam}
 NOPATHNAME2=${NAME2##*/}
 
 
-ml samtools/1.5
+ml samtools/1.9
 TUMORSAMPLE=`samtools view -H $BAM | grep '@RG' | gawk 'NR==1{ if (match($0,/SM:[ A-Za-z0-9_-]*/,m)) print m[0] }' | sed 's/SM://'`
 NORMALSAMPLE=`samtools view -H $BAM2 | grep '@RG' | gawk 'NR==1{ if (match($0,/SM:[ A-Za-z0-9_-]*/,m)) print m[0] }' | sed 's/SM://'`
 

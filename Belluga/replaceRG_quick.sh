@@ -4,7 +4,7 @@
 
 #alias cyan="sed $'s,.*,\e[96m&\e[m,'"
 
-module load samtools/1.5
+module load samtools/1.9
 
 export BAM=$1
 export NAME=${BAM%.bam}
@@ -49,7 +49,7 @@ JOB1="samtools view -H $BAM | sed \"s/${RGPL}/Illumina/\" | samtools reheader -P
 samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bai
 "
 
-COMMAND="module load samtools/1.5 && cd $JOB_OUTPUT_DIR/$STEP && \
+COMMAND="module load samtools/1.9 && cd $JOB_OUTPUT_DIR/$STEP && \
 $JOB1
 "
 
