@@ -70,12 +70,12 @@ fi
 "
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
-COMMAND="module load mugqic/java/openjdk-jdk1.8.0_72 gatk/4.1.0.0 samtools/1.9 && cd ${JOB_OUTPUT_DIR}/$STEP && \
+COMMAND="module load java/1.8.0_192 gatk/4.1.0.0 samtools/1.9 && cd ${JOB_OUTPUT_DIR}/$STEP && \
 $JOB1
 "
 
 # JOB1="
-# java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.7/GenomeAnalysisTK.jar \
+# java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/gatk/3.8/GenomeAnalysisTK.jar \
 #   --analysis_type BaseRecalibrator \
 #   --num_cpu_threads_per_data_thread 20 \
 #   --input_file ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
@@ -84,7 +84,7 @@ $JOB1
 #   --knownSites $KNOWNSITES2 \
 #   --knownSites $KNOWNSITES3 \
 #   --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp && \
-# java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.7/GenomeAnalysisTK.jar \
+# java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/gatk/3.8/GenomeAnalysisTK.jar \
 #   --analysis_type PrintReads \
 #   --num_cpu_threads_per_data_thread 20 \
 #   --input_file ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
@@ -99,7 +99,7 @@ $JOB1
 # "
 
 # if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
-# COMMAND="module load mugqic/java/openjdk-jdk1.8.0_72 mugqic/GenomeAnalysisTK/3.7 samtools/1.9 && cd ${JOB_OUTPUT_DIR}/$STEP && \
+# COMMAND="module load java/1.8.0_192 gatk/3.8 samtools/1.9 && cd ${JOB_OUTPUT_DIR}/$STEP && \
 # $JOB1
 # "
 
