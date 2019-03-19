@@ -46,22 +46,23 @@ timestamp() {
 USAGE_LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.usage.log
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.log
 
-
 JOB1="
-gatk BaseRecalibrator \
---java-options \"-Xmx20G\" \
---reference $REF \
---input ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
---known-sites $KNOWNSITES1 \
---known-sites $KNOWNSITES2 \
---known-sites $KNOWNSITES3 \
---output ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp && \
-gatk ApplyBQSR \
---java-options \"-Xmx20G\" \
---reference $REF \
---input ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
---bqsr-recal-file ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp \
---output ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam && \
+java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.7/GenomeAnalysisTK.jar \
+  --analysis_type BaseRecalibrator \
+  --num_cpu_threads_per_data_thread 20 \
+  --input_file ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
+  --reference_sequence $REF  \
+  --knownSites $KNOWNSITES1 \
+  --knownSites $KNOWNSITES2 \
+  --knownSites $KNOWNSITES3 \
+  --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp && \
+java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.7/GenomeAnalysisTK.jar \
+  --analysis_type PrintReads \
+  --num_cpu_threads_per_data_thread 20 \
+  --input_file ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
+  --reference_sequence $REF \
+  --BQSR ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp \
+  --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam && \
 md5sum ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.md5 && \
 samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai
 if [ -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai ];then \
@@ -70,45 +71,16 @@ fi
 "
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
-COMMAND="module load mugqic/java/openjdk-jdk1.8.0_72 gatk/4.1.0.0 samtools/1.9 && cd ${JOB_OUTPUT_DIR}/$STEP && \
+COMMAND="module load mugqic/java/openjdk-jdk1.8.0_72 mugqic/GenomeAnalysisTK/3.7 samtools/1.9 && cd ${JOB_OUTPUT_DIR}/$STEP && \
 $JOB1
 "
-
-# JOB1="
-# java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.7/GenomeAnalysisTK.jar \
-#   --analysis_type BaseRecalibrator \
-#   --num_cpu_threads_per_data_thread 20 \
-#   --input_file ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
-#   --reference_sequence $REF  \
-#   --knownSites $KNOWNSITES1 \
-#   --knownSites $KNOWNSITES2 \
-#   --knownSites $KNOWNSITES3 \
-#   --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp && \
-# java -Djava.io.tmpdir="'$SLURM_TMPDIR'" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.7/GenomeAnalysisTK.jar \
-#   --analysis_type PrintReads \
-#   --num_cpu_threads_per_data_thread 20 \
-#   --input_file ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
-#   --reference_sequence $REF \
-#   --BQSR ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp \
-#   --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam && \
-# md5sum ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.md5 && \
-# samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai
-# if [ -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai ];then \
-# rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam
-# fi
-# "
-
-# if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
-# COMMAND="module load mugqic/java/openjdk-jdk1.8.0_72 mugqic/GenomeAnalysisTK/3.7 samtools/1.9 && cd ${JOB_OUTPUT_DIR}/$STEP && \
-# $JOB1
-# "
 
 #Write .sh script to be submitted with sbatch
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 
 sbatch --job-name=recalibration_${NOPATHNAME} --output=%x-%j.out --time=72:00:00 \
---mem=31G --cpus-per-task=40 --dependency=afterok:$JOB_DEPENDENCIES \
+--mem=31G --cpus-per-task=20 --dependency=afterok:$JOB_DEPENDENCIES \
 ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID
 

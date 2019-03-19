@@ -31,7 +31,7 @@ timestamp() {
 
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.log
 
-JOB1="module load mugqic/samtools/1.3.1 mugqic/sambamba/0.6.5 && \
+JOB1="module load samtools/1.9 mugqic/sambamba/0.6.5 && \
 cd ${JOB_OUTPUT_DIR}/$STEP && \
 sambamba markdup -t 5 \
   ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.sorted.bam \
@@ -75,7 +75,7 @@ echo "$(timestamp)" >> $LOG
 
 JOB_DEPENDENCY2=$(cat ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_markDup.JOBID)
 
-JOB2="module load mugqic/samtools/1.3.1 && \
+JOB2="module load samtools/1.9 && \
 cd ${JOB_OUTPUT_DIR}/$STEP && \
 samtools index ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
 if [ -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
