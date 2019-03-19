@@ -31,7 +31,7 @@ timestamp() {
 
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.log
 
-JOB1="module load samtools/1.9 mugqic/sambamba/0.6.5 && \
+JOB1="module use /cvmfs/soft.mugqic/CentOS6/modulefiles && module load samtools/1.9 mugqic/sambamba/0.6.5 && \
 cd ${JOB_OUTPUT_DIR}/$STEP && \
 sambamba markdup -t 5 \
   ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.sorted.bam \
