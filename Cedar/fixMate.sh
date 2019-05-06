@@ -34,7 +34,7 @@ groupfixmate \
 --level 1 \
 --bam ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
 --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam &&
-sambamba sort -t 40 -m 1GB --tmpdir="'$SLURM_TMPDIR'" \
+sambamba sort -t 40 -m 1GB --tmpdir="${JOB_OUTPUT_DIR}/${STEP}" \
 ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam
 if [ -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
 rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam

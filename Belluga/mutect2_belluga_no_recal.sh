@@ -144,21 +144,21 @@ bash ${MY_PATH}/sambamba_markDuplicates.sh $NORMAL $REF $PREVIOUS
 
 sleep 0.5m
 
-#-------------------------------------------------------------------------------
-# Recalibration
-#-------------------------------------------------------------------------------
-PREVIOUS=$STEP
-STEP=Recalibration
+# #-------------------------------------------------------------------------------
+# # Recalibration
+# #-------------------------------------------------------------------------------
+# PREVIOUS=$STEP
+# STEP=Recalibration
 
-echo "Queuing"
-echo "${STEP} Step:" 
-echo $(timestamp)
+# echo "Queuing"
+# echo "${STEP} Step:" 
+# echo $(timestamp)
 
-bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
+# bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
 
-bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
+# bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
 
-sleep 0.5m
+# sleep 0.5m
 
 
 #-------------------------------------------------------------------------------
@@ -173,57 +173,57 @@ sleep 0.5m
 
 # sleep 0.5m
 
-# #-------------------------------------------------------------------------------
-# # Gatk_mutect2
-# #-------------------------------------------------------------------------------
-# PREVIOUS=$STEP
-# STEP=Gatk_4.0.8.1_mutect2
+#-------------------------------------------------------------------------------
+# Gatk_mutect2
+#-------------------------------------------------------------------------------
+PREVIOUS=$STEP
+STEP=Gatk_4.0.8.1_mutect2
 
-# echo "Queuing"
-# echo "${STEP} Steps:" 
-# echo $(timestamp)
+echo "Queuing"
+echo "${STEP} Steps:" 
+echo $(timestamp)
 
-# if [ ! -f chromosome.list ];then bash ${MY_PATH}/make_chromosome_list.sh ; fi
+if [ ! -f chromosome.list ];then bash ${MY_PATH}/make_chromosome_list.sh ; fi
 
-# #if bam files has no chr in chromosome names
-# if [ ! -f fixed_chromosome.list ];then sed 's/chr//' chromosome.list > fixed_chromosome.list; fi
+#if bam files has no chr in chromosome names
+if [ ! -f fixed_chromosome.list ];then sed 's/chr//' chromosome.list > fixed_chromosome.list; fi
 
-# for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.1.sh -t $TUMOR -n $NORMAL \
-# -r $REF -c $chromosome $PREVIOUS ; done
+for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.1.sh -t $TUMOR -n $NORMAL \
+-r $REF -c $chromosome $PREVIOUS ; done
 
-# sleep 0.5m
+sleep 0.5m
 
-# #-------------------------------------------------------------------------------
-# # STEP: Filter_calls
-# #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# STEP: Filter_calls
+#-------------------------------------------------------------------------------
 
-# PREVIOUS=$STEP
-# STEP=Filter_calls
+PREVIOUS=$STEP
+STEP=Filter_calls
 
-# echo "Queuing"
-# echo "filter_calls Step:" 
-# echo $(timestamp)
+echo "Queuing"
+echo "filter_calls Step:" 
+echo $(timestamp)
 
-# #bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS
+#bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS
 
-# for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
+for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
 
-# sleep 0.5m
+sleep 0.5m
 
-# #-------------------------------------------------------------------------------
-# # STEP: Concat_calls
-# #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# STEP: Concat_calls
+#-------------------------------------------------------------------------------
 
-# PREVIOUS=$STEP
-# STEP=Concat_calls
+PREVIOUS=$STEP
+STEP=Concat_calls
 
-# echo "Queuing"
-# echo "Concat_calls Step:" 
-# echo $(timestamp)
+echo "Queuing"
+echo "Concat_calls Step:" 
+echo $(timestamp)
 
-# bash ${MY_PATH}/concat_calls.sh $TUMOR $PREVIOUS
+bash ${MY_PATH}/concat_calls.sh $TUMOR $PREVIOUS
 
-# sleep 0.5m
+sleep 0.5m
 
 #-------------------------------------------------------------------------------
 # STEP: Cleanup

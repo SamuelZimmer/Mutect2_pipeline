@@ -102,7 +102,7 @@ JOB_DEPENDENCIE2=$(cat ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME2}.JOBID)
 timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
-
+USAGE_LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}_${CHR}.usage.log
 LOG=$JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${STEP}_${NOPATHNAME}_${CHR}.log
 
 #     [--dbsnp dbSNP.vcf] \
@@ -110,8 +110,7 @@ LOG=$JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${STEP}_${NOPATHNAME}_${CHR}.log
 #--cosmic /nfs3_ib/bourque-mp2.nfs/tank/nfs/bourque/nobackup/share/mugqic_dev/genomes/Homo_sapiens/hg1k_v37/annotations/b37_cosmic_v70_140903.vcf.gz \
 #--dbsnp /cvmfs/soft.mugqic/CentOS6/genomes/species/Homo_sapiens.GRCh37/annotations/Homo_sapiens.GRCh37.dbSNP142.vcf.gz
 
-JOB1="ml gatk/4.0.8.1 && ml java/1.8.0_121 && \
-cd $JOB_OUTPUT_DIR/$STEP && \
+JOB1="
 java -jar /cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/gatk/4.0.8.1/gatk-package-4.0.8.1-local.jar \
 Mutect2 \
 --reference $REF \
@@ -124,25 +123,9 @@ Mutect2 \
 "
 
 if [ ! -f $JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${CHR}.vcf.gz ];then \
-COMMAND="timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo '$JOB1' >> $LOG
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE PROLOGUE' >> $LOG
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG
-$JOB1
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE EPILOGUE' >> $LOG
-echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG"
+COMMAND="ml gatk/4.0.8.1 && ml java/1.8.0_121 && cd $JOB_OUTPUT_DIR/$STEP && \
+/cvmfs/soft.computecanada.ca/nix/var/nix/profiles/16.09/bin/time -o $USAGE_LOG -f 'Max Memory: %M Kb\nAverage Memory: %K Kb\nNumber of Swaps: %W \nElapsed Real Time: %E [hours:minutes:seconds]' $JOB1
+"
 
 
 

@@ -38,9 +38,7 @@ USAGE_LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.usage.log
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.log
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.vcf.gz ];then \
-JOB1="
-module use /cvmfs/soft.mugqic/CentOS6/modulefiles && module load bcftools/1.9 htslib/1.9 mugqic/vt/0.57 && cd $JOB_OUTPUT_DIR/$STEP && \
-bcftools \
+JOB1="bcftools \
 concat -a \
 ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}/1.vcf.gz \
 ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}/2.vcf.gz \
@@ -71,26 +69,8 @@ ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}/MT.vcf.gz \
  > \
 ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.vcf.gz && tabix -pvcf ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.vcf.gz
 "
-COMMAND="
-timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo '$JOB1' >> $LOG
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE PROLOGUE' >> $LOG
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG
-$JOB1
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE EPILOGUE' >> $LOG
-echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG"
+COMMAND="module load mugqic/bcftools/1.3 mugqic/htslib/1.3 mugqic/vt/0.57 && cd $JOB_OUTPUT_DIR/$STEP && \
+/cvmfs/soft.computecanada.ca/nix/var/nix/profiles/16.09/bin/time -o $USAGE_LOG -f 'Max Memory: %M Kb\nAverage Memory: %K Kb\nNumber of Swaps: %W \nElapsed Real Time: %E [hours:minutes:seconds]' $JOB1
 "
 
 #Write .sh script to be submitted with sbatch

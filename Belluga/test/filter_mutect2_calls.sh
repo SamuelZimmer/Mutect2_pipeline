@@ -33,43 +33,23 @@ timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
+USAGE_LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.usage.log
 LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}_${CHR}.log
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}.vcf.gz ];then \
-JOB1="
-ml nixpkgs/16.09 gatk/4.0.8.1 java/1.8.0_121 && cd $JOB_OUTPUT_DIR/$STEP && \
-java -jar /cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/gatk/4.0.8.1/gatk-package-4.0.8.1-local.jar \
+JOB1="java -jar /cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/gatk/4.0.8.1/gatk-package-4.0.8.1-local.jar \
 FilterMutectCalls \
 --output ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}.vcf.gz \
 --variant ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}/${CHR}.vcf.gz"
-
-COMMAND="
-timestamp() {
-  date +\"%Y-%m-%d %H:%M:%S\"
-}
-echo '$JOB1' >> $LOG
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE PROLOGUE' >> $LOG
-echo \"Started:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG
-$JOB1
-echo '#######################################' >> $LOG
-echo 'SLURM FAKE EPILOGUE' >> $LOG
-echo \"Ended:\" | sed $'s,.*,\e[96m&\e[m,' >> $LOG
-timestamp >> $LOG
-scontrol show job \$SLURM_JOBID >> $LOG
-sstat -j \$SLURM_JOBID.batch >> $LOG
-echo '#######################################' >> $LOG"
+COMMAND="ml gatk/4.0.8.1 && ml java/1.8.0_121 && cd $JOB_OUTPUT_DIR/$STEP ;\
+/cvmfs/soft.computecanada.ca/nix/var/nix/profiles/16.09/bin/time -o $USAGE_LOG -f 'Max Memory: %M Kb\nAverage Memory: %K Kb\nNumber of Swaps: %W \nElapsed Real Time: %E [hours:minutes:seconds]' $JOB1
 "
 
 #Write .sh script to be submitted with sbatch
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}.sh
 
-sbatch --job-name=filter_calls_${NOPATHNAME} --output=%x-%j.out --time=5:00:00 --mem=8G \
+sbatch --job-name=filter_calls_${NOPATHNAME} --output=%x-%j.out --time=24:00:00 --mem=8G \
 --dependency=afterok:$JOB_DEPENDENCIES ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}/${CHR}.JOBID
 
