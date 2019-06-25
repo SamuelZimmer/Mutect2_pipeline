@@ -91,7 +91,7 @@ timestamp >> $LOG
 scontrol show job \$SLURM_JOBID >> $LOG
 sstat -j \$SLURM_JOBID.batch >> $LOG
 echo '#######################################' >> $LOG"
-"
+
 
 #Write .sh script to be submitted with sbatch
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh

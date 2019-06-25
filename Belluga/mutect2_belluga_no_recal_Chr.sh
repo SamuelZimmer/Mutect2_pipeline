@@ -173,9 +173,9 @@ echo $(timestamp)
 if [ ! -f chromosome.list ];then bash ${MY_PATH}/make_chromosome_list.sh ; fi
 
 #if bam files has no chr in chromosome names
-if [ ! -f fixed_chromosome.list ];then sed 's/chr//' chromosome.list > fixed_chromosome.list; fi
+#if [ ! -f fixed_chromosome.list ];then sed 's/Chr//' chromosome.list > fixed_chromosome.list; fi
 
-for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.1.sh -t $TUMOR -n $NORMAL \
+for chromosome in `cat chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.1.sh -t $TUMOR -n $NORMAL \
 -r $REF -c $chromosome $PREVIOUS ; done
 
 sleep 0.5m
@@ -193,7 +193,7 @@ echo $(timestamp)
 
 #bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS
 
-for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
+for chromosome in `cat chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
 
 sleep 0.5m
 

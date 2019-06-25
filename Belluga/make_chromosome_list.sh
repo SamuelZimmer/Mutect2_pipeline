@@ -1,7 +1,7 @@
 #!/bin/bash
 
-COUNTER=1 ; while [ $COUNTER -lt 23 ] ; do echo "chr"$COUNTER >> chromosome.list ; let COUNTER=$COUNTER+1; done
-echo "chrX" >> chromosome.list
-echo "chrY" >> chromosome.list
-echo "chrMT" >> chromosome.list
+COUNTER=1 ; while [ $COUNTER -lt 23 ] ; do echo "Chr"$COUNTER >> chromosome.list ; let COUNTER=$COUNTER+1; done
+echo "ChrX" >> chromosome.list
+echo "ChrY" >> chromosome.list
+echo "ChrMT" >> chromosome.list
 
