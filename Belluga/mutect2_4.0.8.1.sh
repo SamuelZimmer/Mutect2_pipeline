@@ -79,7 +79,8 @@ NAME2=${BAM2%.bam}
 NOPATHNAME2=${NAME2##*/}
 
 
-ml samtools/1.9
+module load nixpkgs/16.09 intel/2018.3 samtools/1.9
+
 TUMORSAMPLE=`samtools view -H $BAM | grep '@RG' | gawk 'NR==1{ if (match($0,/SM:[ A-Za-z0-9_-]*/,m)) print m[0] }' | sed 's/SM://'`
 NORMALSAMPLE=`samtools view -H $BAM2 | grep '@RG' | gawk 'NR==1{ if (match($0,/SM:[ A-Za-z0-9_-]*/,m)) print m[0] }' | sed 's/SM://'`
 
@@ -110,7 +111,7 @@ LOG=$JOB_OUTPUT_DIR/${STEP}/${NOPATHNAME}/${STEP}_${NOPATHNAME}_${CHR}.log
 #--cosmic /nfs3_ib/bourque-mp2.nfs/tank/nfs/bourque/nobackup/share/mugqic_dev/genomes/Homo_sapiens/hg1k_v37/annotations/b37_cosmic_v70_140903.vcf.gz \
 #--dbsnp /cvmfs/soft.mugqic/CentOS6/genomes/species/Homo_sapiens.GRCh37/annotations/Homo_sapiens.GRCh37.dbSNP142.vcf.gz
 
-JOB1="ml gatk/4.0.8.1 && ml java/1.8.0_121 && \
+JOB1="ml nixpkgs/16.09 gatk/4.0.8.1 && ml java/1.8.0_121 && \
 cd $JOB_OUTPUT_DIR/$STEP && \
 java -jar /cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/gatk/4.0.8.1/gatk-package-4.0.8.1-local.jar \
 Mutect2 \

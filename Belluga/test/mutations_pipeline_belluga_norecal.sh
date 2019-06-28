@@ -2,19 +2,26 @@
 # Exit immediately on error
 set -eu -o pipefail
 
+#Setting colors
+alias red="sed $'s,.*,\e[31m&\e[m,'"
+alias cyan="sed $'s,.*,\e[96m&\e[m,'"
+alias green="sed $'s,.*,\e[92m&\e[m,'"
+
 #Writing proper usage information
-usage="$(basename "$0") [-h] [-n normal.bam] [-t tumor.bam] [-r reference.fasta]
+usage="$(basename "$0") [-h] [-n normal.bam] [-t tumor.bam] [-r reference.fasta] [-k and -2 knowsites]
 
 where:
     -h show this help text
     -n normal bam file, .bai file must be located in same directory
     -t matching tumor bam file
-    -r reference genome file"
+    -r reference genome file
+    -k knownsites
+    -2 knownsites"
 
 #Reference.fa and must have .fai in the same directory
 
 #Fetching script arguments
-while getopts ':ht:n:r:2:3:' option; do
+while getopts ':ht:n:r:k:2:3:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -25,6 +32,12 @@ while getopts ':ht:n:r:2:3:' option; do
 	     ;;
 	 r) REF=$OPTARG
 	     ;;
+    k) KNOWNSITES1=$OPTARG
+       ;;
+    2) KNOWNSITES2=$OPTARG
+       ;;
+    3) KNOWNSITES3=$OPTARG
+       ;;
     :) printf "missing argument for -%s\n" "$OPTARG" | red >&2
        echo "$usage" >&2
        exit 1
@@ -64,7 +77,12 @@ then
    echo "$usage" >&2
    exit 1
 fi
-
+if [ -z "$KNOWNSITES1" ]
+then
+   printf "missing knownsites -k\n" "$OPTARG" | red >&2
+   echo "$usage" >&2
+   exit 1
+fi
 
 # Define a timestamp function
 timestamp() {
@@ -126,6 +144,21 @@ bash ${MY_PATH}/sambamba_markDuplicates.sh $NORMAL $REF $PREVIOUS
 
 sleep 0.5m
 
+#-------------------------------------------------------------------------------
+# Recalibration
+#-------------------------------------------------------------------------------
+PREVIOUS=$STEP
+STEP=Recalibration
+
+echo "Queuing"
+echo "${STEP} Step:" 
+echo $(timestamp)
+
+bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
+
+bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
+
+sleep 0.5m
 
 
 #-------------------------------------------------------------------------------
@@ -140,56 +173,67 @@ sleep 0.5m
 
 # sleep 0.5m
 
+# #-------------------------------------------------------------------------------
+# # Gatk_mutect2
+# #-------------------------------------------------------------------------------
+# PREVIOUS=$STEP
+# STEP=Gatk_4.0.8.1_mutect2
+
+# echo "Queuing"
+# echo "${STEP} Steps:" 
+# echo $(timestamp)
+
+# if [ ! -f chromosome.list ];then bash ${MY_PATH}/make_chromosome_list.sh ; fi
+
+# #if bam files has no chr in chromosome names
+# if [ ! -f fixed_chromosome.list ];then sed 's/chr//' chromosome.list > fixed_chromosome.list; fi
+
+# for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.1.sh -t $TUMOR -n $NORMAL \
+# -r $REF -c $chromosome $PREVIOUS ; done
+
+# sleep 0.5m
+
+# #-------------------------------------------------------------------------------
+# # STEP: Filter_calls
+# #-------------------------------------------------------------------------------
+
+# PREVIOUS=$STEP
+# STEP=Filter_calls
+
+# echo "Queuing"
+# echo "filter_calls Step:" 
+# echo $(timestamp)
+
+# #bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS
+
+# for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
+
+# sleep 0.5m
+
+# #-------------------------------------------------------------------------------
+# # STEP: Concat_calls
+# #-------------------------------------------------------------------------------
+
+# PREVIOUS=$STEP
+# STEP=Concat_calls
+
+# echo "Queuing"
+# echo "Concat_calls Step:" 
+# echo $(timestamp)
+
+# bash ${MY_PATH}/concat_calls.sh $TUMOR $PREVIOUS
+
+# sleep 0.5m
+
 #-------------------------------------------------------------------------------
-# Gatk_mutect2
-#-------------------------------------------------------------------------------
-PREVIOUS=$STEP
-STEP=Gatk_4.0.8.1_mutect2
-
-echo "Queuing"
-echo "${STEP} Steps:" 
-echo $(timestamp)
-
-if [ ! -f chromosome.list ];then bash ${MY_PATH}/make_chromosome_list.sh ; fi
-
-#if bam files has no chr in chromosome names
-if [ ! -f fixed_chromosome.list ];then sed 's/chr//' chromosome.list > fixed_chromosome.list; fi
-
-for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.1.sh -t $TUMOR -n $NORMAL \
--r $REF -c $chromosome $PREVIOUS ; done
-
-sleep 0.5m
-
-#-------------------------------------------------------------------------------
-# STEP: Filter_calls
+# STEP: Cleanup
 #-------------------------------------------------------------------------------
 
-PREVIOUS=$STEP
-STEP=Filter_calls
+# PREVIOUS=$STEP
 
-echo "Queuing"
-echo "filter_calls Step:" 
-echo $(timestamp)
+# echo "Queuing"
+# echo "Cleanup Step:" 
+# echo $(timestamp)
 
-#bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS
-
-for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
-
-sleep 0.5m
-
-#-------------------------------------------------------------------------------
-# STEP: Concat_calls
-#-------------------------------------------------------------------------------
-
-PREVIOUS=$STEP
-STEP=Concat_calls
-
-echo "Queuing"
-echo "Concat_calls Step:" 
-echo $(timestamp)
-
-bash ${MY_PATH}/concat_calls.sh $TUMOR $PREVIOUS
-
-sleep 0.5m
-
+# bash ${MY_PATH}/cleanup.sh $TUMOR $PREVIOUS
 

@@ -47,7 +47,7 @@ sambamba markdup -t 5 \
 "
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam.bai ];then \
-COMMAND="module load samtools/1.9 nixpkgs/16.09 sambamba/0.6.7 && \
+COMMAND="module load nixpkgs/16.09 intel/2018.3 samtools/1.9 sambamba/0.6.7 && \
 cd ${JOB_OUTPUT_DIR}/$STEP && \
 $JOB1
 "
@@ -88,7 +88,7 @@ rm ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam
 fi"
 
 
-COMMAND="module load samtools/1.9 && \
+COMMAND="module load nixpkgs/16.09 intel/2018.3 samtools/1.9 && \
 cd ${JOB_OUTPUT_DIR}/$STEP && \
 $JOB2
 "
