@@ -192,7 +192,7 @@ echo "Queuing"
 echo "Concat_calls Step:" 
 echo $(timestamp)
 
-bash ${MY_PATH}/concat_calls.sh $TUMOR $PREVIOUS
+bash ${MY_PATH}/concat_calls_Chr.sh $TUMOR $PREVIOUS
 
 sleep 0.5m
 

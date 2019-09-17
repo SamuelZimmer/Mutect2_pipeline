@@ -2,6 +2,11 @@
 # Exit immediately on error
 set -eu -o pipefail
 
+#Setting colors
+alias red="sed $'s,.*,\e[31m&\e[m,'"
+alias cyan="sed $'s,.*,\e[96m&\e[m,'"
+alias green="sed $'s,.*,\e[92m&\e[m,'"
+
 #Writing proper usage information
 usage="$(basename "$0") [-h] [-n normal.bam] [-t tumor.bam] [-r reference.fasta]
 
@@ -127,6 +132,22 @@ bash ${MY_PATH}/sambamba_markDuplicates.sh $NORMAL $REF $PREVIOUS
 sleep 0.5m
 
 
+#-------------------------------------------------------------------------------
+# Recalibration
+#-------------------------------------------------------------------------------
+PREVIOUS=$STEP
+STEP=Recalibration
+
+echo "Queuing"
+echo "${STEP} Step:" 
+echo $(timestamp)
+
+bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
+
+bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
+
+sleep 0.5m
+
 
 #-------------------------------------------------------------------------------
 # NovoBreak
@@ -153,9 +174,9 @@ echo $(timestamp)
 if [ ! -f chromosome.list ];then bash ${MY_PATH}/make_chromosome_list.sh ; fi
 
 #if bam files has no chr in chromosome names
-if [ ! -f fixed_chromosome.list ];then sed 's/Chr//' chromosome.list > fixed_chromosome.list; fi
+#if [ ! -f fixed_chromosome.list ];then sed 's/chr//' chromosome.list > fixed_chromosome.list; fi
 
-for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.1.sh -t $TUMOR -n $NORMAL \
+for chromosome in `cat chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.1.sh -t $TUMOR -n $NORMAL \
 -r $REF -c $chromosome $PREVIOUS ; done
 
 sleep 0.5m
@@ -173,7 +194,7 @@ echo $(timestamp)
 
 #bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS
 
-for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
+for chromosome in `cat chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
 
 sleep 0.5m
 
@@ -192,17 +213,3 @@ bash ${MY_PATH}/concat_calls.sh $TUMOR $PREVIOUS
 
 sleep 0.5m
 
-# #-------------------------------------------------------------------------------
-# # STEP: Cleanup
-# #-------------------------------------------------------------------------------
-
-# PREVIOUS=$STEP
-# STEP=Cleanup
-
-# echo "Queuing"
-# echo "Cleanup Step:" 
-# echo $(timestamp)
-
-# bash ${MY_PATH}/cleanup.sh $TUMOR
-
-# sleep 0.5m

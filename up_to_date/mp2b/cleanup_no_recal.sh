@@ -14,7 +14,7 @@ JOB_OUTPUT_DIR=$OUTPUT_DIR/job_output
 cd $JOB_OUTPUT_DIR
 mkdir -p $OUTPUT_DIR/jobs
 
-JOB_DEPENDENCIES=$(cat ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.JOBID)
+JOB_DEPENDENCIES=$(sacct --format="JobID,JobName%60" | grep ${NOPATHNAME} | cut -d ' ' -f 1 | sed ':a;N;$!ba;s/\n/,/g')
 
 mkdir -p $OUTPUT_DIR/logs
 
@@ -42,6 +42,7 @@ rm $JOB_OUTPUT_DIR/*/*/*.JOBID
 
 mv $JOB_OUTPUT_DIR/Sambamba_markDuplicates/*.ba* /home/zimmers/ip29_home/Preprocessed/MarkDup
 
+
 rm -fr $JOB_OUTPUT_DIR/ReplaceReadGroup $JOB_OUTPUT_DIR/Sambamba_markDuplicates $JOB_OUTPUT_DIR/FixMate
 "
 
@@ -55,5 +56,5 @@ echo "$COMMAND" >> $OUTPUT_DIR/jobs/cleanup.sh
 
 
 sbatch --job-name=Cleanup_${NOPATHNAME} --output=%x-%j.out --time=24:00:00 --mem=2G \
---dependency=afterok:$JOB_DEPENDENCIES $OUTPUT_DIR/jobs/cleanup.sh \
+--dependency=afterok:$JOB_DEPENDENCIES $OUTPUT_DIR/jobs/cleanup.sh
 
