@@ -3,18 +3,20 @@
 set -eu -o pipefail
 
 #Writing proper usage information
-usage="$(basename "$0") [-h] [-n normal.bam] [-t tumor.bam] [-r reference.fasta]
+usage="$(basename "$0") [-h] [-n normal.bam] [-t tumor.bam] [-r reference.fasta] [-k and -2 knowsites]
 
 where:
     -h show this help text
     -n normal bam file, .bai file must be located in same directory
     -t matching tumor bam file
-    -r reference genome file"
+    -r reference genome file
+    -k knownsites
+    -2 knownsites"
 
 #Reference.fa and must have .fai in the same directory
 
 #Fetching script arguments
-while getopts ':ht:n:r:2:3:' option; do
+while getopts ':ht:n:r:k:2:3:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -25,6 +27,12 @@ while getopts ':ht:n:r:2:3:' option; do
 	     ;;
 	 r) REF=$OPTARG
 	     ;;
+    k) KNOWNSITES1=$OPTARG
+       ;;
+    2) KNOWNSITES2=$OPTARG
+       ;;
+    3) KNOWNSITES3=$OPTARG
+       ;;
     :) printf "missing argument for -%s\n" "$OPTARG" | red >&2
        echo "$usage" >&2
        exit 1
@@ -61,6 +69,12 @@ fi
 if [ -z "$REF" ]
 then
    printf "missing reference file -r\n" "$OPTARG" | red >&2
+   echo "$usage" >&2
+   exit 1
+fi
+if [ -z "$KNOWNSITES1" ]
+then
+   printf "missing knownsites -k\n" "$OPTARG" | red >&2
    echo "$usage" >&2
    exit 1
 fi
