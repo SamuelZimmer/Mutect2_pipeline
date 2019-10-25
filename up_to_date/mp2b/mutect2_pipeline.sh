@@ -8,20 +8,22 @@ alias cyan="sed $'s,.*,\e[96m&\e[m,'"
 alias green="sed $'s,.*,\e[92m&\e[m,'"
 
 #Writing proper usage information
-usage="$(basename "$0") [-h] [-n normal.bam] [-t tumor.bam] [-r reference.fasta] [-k and -2 knowsites]
+usage="$(basename "$0") [-h] [-n normal.bam] [-t tumor.bam] [-o old_normal.bam] [-v old_tumor.bam ] [-r reference.fasta] [-k and -2 knowsites]
 
 where:
     -h show this help text
     -n normal bam file, .bai file must be located in same directory
     -t matching tumor bam file
     -r reference genome file
+    -o old normal bam file
+    -v old tumor bam file
     -k knownsites
     -2 knownsites"
 
 #Reference.fa and must have .fai in the same directory
 
 #Fetching script arguments
-while getopts ':ht:n:r:k:2:3:' option; do
+while getopts ':ht:n:r:k:2:3:o:v:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -35,8 +37,12 @@ while getopts ':ht:n:r:k:2:3:' option; do
     k) KNOWNSITES1=$OPTARG
        ;;
     2) KNOWNSITES2=$OPTARG
-       ;;
+       ;;    
     3) KNOWNSITES3=$OPTARG
+       ;;
+    o) OLD_NORMAL=$OPTARG
+       ;;
+    v) OLD_TUMOR=$OPTARG
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" | red >&2
        echo "$usage" >&2
@@ -83,6 +89,18 @@ then
    echo "$usage" >&2
    exit 1
 fi
+if [ -z "$OLD_NORMAL" ]
+then
+   printf "missing knownsites -k\n" "$OPTARG" | red >&2
+   echo "$usage" >&2
+   exit 1
+fi
+if [ -z "$OLD_TUMOR" ]
+then
+   printf "missing knownsites -k\n" "$OPTARG" | red >&2
+   echo "$usage" >&2
+   exit 1
+fi
 
 # Define a timestamp function
 timestamp() {
@@ -90,24 +108,42 @@ timestamp() {
 }
 
 
-
 #-------------------------------------------------------------------------------
-#ReplaceReadGroup
+#addReadGroup
 #-------------------------------------------------------------------------------
 #replaceReadGroup:
-#this step will change RGPL for ILLUMINA
+#this step will add RG information because I forgot to add it when I aligned the fastqs
 
-STEP=ReplaceReadGroup
+STEP=AddReadGroup
 
 echo "Queuing"
 echo "${STEP} Step:" 
 echo $(timestamp)
 
-bash ${MY_PATH}/replaceRG_quick.sh $TUMOR
+bash ${MY_PATH}/addRG.sh $TUMOR $OLD_TUMOR
 
-bash ${MY_PATH}/replaceRG_quick.sh $NORMAL
+bash ${MY_PATH}/addRG.sh $NORMAL $OLD_NORMAL
 
 sleep 0.5m
+
+
+# #-------------------------------------------------------------------------------
+# #ReplaceReadGroup
+# #-------------------------------------------------------------------------------
+# #replaceReadGroup:
+# #this step will change RGPL for ILLUMINA
+
+# STEP=ReplaceReadGroup
+
+# echo "Queuing"
+# echo "${STEP} Step:" 
+# echo $(timestamp)
+
+# bash ${MY_PATH}/replaceRG_quick.sh $TUMOR
+
+# bash ${MY_PATH}/replaceRG_quick.sh $NORMAL
+
+# sleep 0.5m
 
 #-------------------------------------------------------------------------------
 #Fix_mate_by_coordinate

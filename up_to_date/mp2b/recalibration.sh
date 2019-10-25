@@ -73,18 +73,18 @@ LOG=${JOB_OUTPUT_DIR}/${STEP}/${STEP}_${NOPATHNAME}.log
 # "
 
 JOB1="
-java -Djava.io.tmpdir="${JOB_OUTPUT_DIR}/${STEP}" -XX:ParallelGCThreads=4 -Xmx150G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.8/GenomeAnalysisTK.jar \
+java -Djava.io.tmpdir="${JOB_OUTPUT_DIR}/${STEP}" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.8/GenomeAnalysisTK.jar \
   --analysis_type BaseRecalibrator \
-  --num_cpu_threads_per_data_thread 40 \
+  --num_cpu_threads_per_data_thread 20 \
   --input_file ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
   --reference_sequence $REF  \
   --knownSites $KNOWNSITES1 \
   --knownSites $KNOWNSITES2 \
   --knownSites $KNOWNSITES3 \
   --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp && \
-java -Djava.io.tmpdir="${JOB_OUTPUT_DIR}/${STEP}" -XX:ParallelGCThreads=4 -Xmx150G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.8/GenomeAnalysisTK.jar \
+java -Djava.io.tmpdir="${JOB_OUTPUT_DIR}/${STEP}" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.8/GenomeAnalysisTK.jar \
   --analysis_type PrintReads \
-  --num_cpu_threads_per_data_thread 40 \
+  --num_cpu_threads_per_data_thread 20 \
   --input_file ${JOB_OUTPUT_DIR}/${PREVIOUS}/${NOPATHNAME}.bam \
   --reference_sequence $REF \
   --BQSR ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp \
@@ -106,8 +106,8 @@ $JOB1
 echo "#!/bin/bash" > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 
-sbatch --job-name=recalibration_${NOPATHNAME} --output=%x-%j.out --time=70:00:00 \
---mem=150G --cpus-per-task=40 --dependency=afterok:$JOB_DEPENDENCIES \
+sbatch --job-name=recalibration_${NOPATHNAME} --output=%x-%j.out --time=72:00:00 \
+--mem=31G --cpus-per-task=20 --dependency=afterok:$JOB_DEPENDENCIES \
 ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID
 
