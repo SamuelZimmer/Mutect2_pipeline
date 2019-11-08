@@ -8,7 +8,7 @@ alias cyan="sed $'s,.*,\e[96m&\e[m,'"
 alias green="sed $'s,.*,\e[92m&\e[m,'"
 
 #Writing proper usage information
-usage="$(basename "$0") [-h] [-n normal.bam] [-t tumor.bam] [-c old_normal.bam] [-v old_tumor.bam ] [-r reference.fasta] [-k and -2 knowsites]
+usage="$(basename "$0") [-h] [-n normal.bam] [-t tumor.bam] [-c old_normal.bam] [-v old_tumor.bam ] [-r reference.fasta]
 
 where:
     -h show this help text
@@ -16,9 +16,7 @@ where:
     -t matching tumor bam file
     -r reference genome file
     -c old normal bam file
-    -v old tumor bam file
-    -k knownsites
-    -2 knownsites"
+    -v old tumor bam file"
 
 #Reference.fa and must have .fai in the same directory
 
@@ -34,12 +32,6 @@ while getopts ':ht:n:r:k:2:3:c:v:' option; do
 	     ;;
 	 r) REF=$OPTARG
 	     ;;
-    k) KNOWNSITES1=$OPTARG
-       ;;
-    2) KNOWNSITES2=$OPTARG
-       ;;    
-   #  3) KNOWNSITES3=$OPTARG
-   #     ;;
     c) OLD_NORMAL=$OPTARG
        ;;
     v) OLD_TUMOR=$OPTARG
@@ -83,21 +75,15 @@ then
    echo "$usage" >&2
    exit 1
 fi
-if [ -z "$KNOWNSITES1" ]
-then
-   printf "missing knownsites -k\n" "$OPTARG" | red >&2
-   echo "$usage" >&2
-   exit 1
-fi
 if [ -z "$OLD_NORMAL" ]
 then
-   printf "missing knownsites -k\n" "$OPTARG" | red >&2
+   printf "missing old normal file -c\n" "$OPTARG" | red >&2
    echo "$usage" >&2
    exit 1
 fi
 if [ -z "$OLD_TUMOR" ]
 then
-   printf "missing knownsites -k\n" "$OPTARG" | red >&2
+   printf "missing old tumor file -v\n" "$OPTARG" | red >&2
    echo "$usage" >&2
    exit 1
 fi
@@ -126,24 +112,6 @@ bash ${MY_PATH}/addRG.sh $NORMAL $OLD_NORMAL
 
 sleep 0.5m
 
-
-# #-------------------------------------------------------------------------------
-# #ReplaceReadGroup
-# #-------------------------------------------------------------------------------
-# #replaceReadGroup:
-# #this step will change RGPL for ILLUMINA
-
-# STEP=ReplaceReadGroup
-
-# echo "Queuing"
-# echo "${STEP} Step:" 
-# echo $(timestamp)
-
-# bash ${MY_PATH}/replaceRG_quick.sh $TUMOR
-
-# bash ${MY_PATH}/replaceRG_quick.sh $NORMAL
-
-# sleep 0.5m
 
 #-------------------------------------------------------------------------------
 #Fix_mate_by_coordinate
@@ -180,38 +148,18 @@ bash ${MY_PATH}/sambamba_markDuplicates.sh $NORMAL $REF $PREVIOUS
 
 sleep 0.5m
 
+
 #-------------------------------------------------------------------------------
-# Recalibration
+#NovoBreak
 #-------------------------------------------------------------------------------
 PREVIOUS=$STEP
-STEP=Recalibration
-
 echo "Queuing"
-echo "${STEP} Step:" 
+echo "NovoBreak Steps:" 
 echo $(timestamp)
 
-# bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
-
-# bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
-
-bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $PREVIOUS
-
-bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $PREVIOUS
+bash ${MY_PATH}/NovoBreak/novoBreak.sh -t $TUMOR -n $NORMAL -r $REF $PREVIOUS
 
 sleep 0.5m
-
-
-#-------------------------------------------------------------------------------
-# NovoBreak
-#-------------------------------------------------------------------------------
-# PREVIOUS=$STEP
-# echo "Queuing"
-# echo "NovoBreak Steps:" 
-# echo $(timestamp)
-
-# bash ${MY_PATH}/NovoBreak/novoBreak.sh -t $TUMOR -n $NORMAL -r $REF $PREVIOUS
-
-# sleep 0.5m
 
 #-------------------------------------------------------------------------------
 # Gatk_mutect2

@@ -202,16 +202,16 @@ sleep 0.5m
 
 
 #-------------------------------------------------------------------------------
-# NovoBreak
+#NovoBreak
 #-------------------------------------------------------------------------------
-# PREVIOUS=$STEP
-# echo "Queuing"
-# echo "NovoBreak Steps:" 
-# echo $(timestamp)
+PREVIOUS=$STEP
+echo "Queuing"
+echo "NovoBreak Steps:" 
+echo $(timestamp)
 
-# bash ${MY_PATH}/NovoBreak/novoBreak.sh -t $TUMOR -n $NORMAL -r $REF $PREVIOUS
+bash ${MY_PATH}/NovoBreak/novoBreak.sh -t $TUMOR -n $NORMAL -r $REF $PREVIOUS
 
-# sleep 0.5m
+sleep 0.5m
 
 #-------------------------------------------------------------------------------
 # Gatk_mutect2

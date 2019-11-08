@@ -8,7 +8,7 @@ alias cyan="sed $'s,.*,\e[96m&\e[m,'"
 alias green="sed $'s,.*,\e[92m&\e[m,'"
 
 #Writing proper usage information
-usage="$(basename "$0") [-h] [-n normal.bam] [-t tumor.bam] [-c old_normal.bam] [-v old_tumor.bam ] [-r reference.fasta] [-k and -2 knowsites]
+usage="$(basename "$0") [-h] [-n normal.bam] [-t tumor.bam] [-c old_normal.bam] [-v old_tumor.bam ] [-r reference.fasta]
 
 where:
     -h show this help text
@@ -16,14 +16,12 @@ where:
     -t matching tumor bam file
     -r reference genome file
     -c old normal bam file
-    -v old tumor bam file
-    -k knownsites
-    -2 knownsites"
+    -v old tumor bam file"
 
 #Reference.fa and must have .fai in the same directory
 
 #Fetching script arguments
-while getopts ':ht:n:r:k:2:3:c:v:' option; do
+while getopts ':ht:n:r:c:v:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -34,12 +32,6 @@ while getopts ':ht:n:r:k:2:3:c:v:' option; do
 	     ;;
 	 r) REF=$OPTARG
 	     ;;
-    k) KNOWNSITES1=$OPTARG
-       ;;
-    2) KNOWNSITES2=$OPTARG
-       ;;    
-   #  3) KNOWNSITES3=$OPTARG
-   #     ;;
     c) OLD_NORMAL=$OPTARG
        ;;
     v) OLD_TUMOR=$OPTARG
@@ -80,12 +72,6 @@ fi
 if [ -z "$REF" ]
 then
    printf "missing reference file -r\n" "$OPTARG" | red >&2
-   echo "$usage" >&2
-   exit 1
-fi
-if [ -z "$KNOWNSITES1" ]
-then
-   printf "missing knownsites -k\n" "$OPTARG" | red >&2
    echo "$usage" >&2
    exit 1
 fi
@@ -180,25 +166,25 @@ bash ${MY_PATH}/sambamba_markDuplicates.sh $NORMAL $REF $PREVIOUS
 
 sleep 0.5m
 
-#-------------------------------------------------------------------------------
-# Recalibration
-#-------------------------------------------------------------------------------
-PREVIOUS=$STEP
-STEP=Recalibration
+# #-------------------------------------------------------------------------------
+# # Recalibration
+# #-------------------------------------------------------------------------------
+# PREVIOUS=$STEP
+# STEP=Recalibration
 
-echo "Queuing"
-echo "${STEP} Step:" 
-echo $(timestamp)
+# echo "Queuing"
+# echo "${STEP} Step:" 
+# echo $(timestamp)
 
-# bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
+# # bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
 
-# bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
+# # bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $KNOWNSITES3 $PREVIOUS
 
-bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $PREVIOUS
+# bash ${MY_PATH}/recalibration.sh $TUMOR $REF $KNOWNSITES1 $KNOWNSITES2 $PREVIOUS
 
-bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $PREVIOUS
+# bash ${MY_PATH}/recalibration.sh $NORMAL $REF $KNOWNSITES1 $KNOWNSITES2 $PREVIOUS
 
-sleep 0.5m
+# sleep 0.5m
 
 
 #-------------------------------------------------------------------------------
@@ -233,37 +219,37 @@ for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/mutect2_4.0.8.
 
 sleep 0.5m
 
-#-------------------------------------------------------------------------------
-# STEP: Filter_calls
-#-------------------------------------------------------------------------------
+# #-------------------------------------------------------------------------------
+# # STEP: Filter_calls
+# #-------------------------------------------------------------------------------
 
-PREVIOUS=$STEP
-STEP=Filter_calls
+# PREVIOUS=$STEP
+# STEP=Filter_calls
 
-echo "Queuing"
-echo "filter_calls Step:" 
-echo $(timestamp)
+# echo "Queuing"
+# echo "filter_calls Step:" 
+# echo $(timestamp)
 
-#bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS
+# #bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS
 
-for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
+# for chromosome in `cat fixed_chromosome.list`; do bash ${MY_PATH}/filter_mutect2_calls.sh $TUMOR $PREVIOUS $chromosome; done
 
-sleep 0.5m
+# sleep 0.5m
 
-#-------------------------------------------------------------------------------
-# STEP: Concat_calls
-#-------------------------------------------------------------------------------
+# #-------------------------------------------------------------------------------
+# # STEP: Concat_calls
+# #-------------------------------------------------------------------------------
 
-PREVIOUS=$STEP
-STEP=Concat_calls
+# PREVIOUS=$STEP
+# STEP=Concat_calls
 
-echo "Queuing"
-echo "Concat_calls Step:" 
-echo $(timestamp)
+# echo "Queuing"
+# echo "Concat_calls Step:" 
+# echo $(timestamp)
 
-bash ${MY_PATH}/concat_calls.sh $TUMOR $PREVIOUS
+# bash ${MY_PATH}/concat_calls.sh $TUMOR $PREVIOUS
 
-sleep 0.5m
+# sleep 0.5m
 
 #-------------------------------------------------------------------------------
 # STEP: Cleanup

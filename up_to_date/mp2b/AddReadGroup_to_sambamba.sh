@@ -35,9 +35,9 @@ if [ -z "$MY_PATH" ] ; then
 fi
 
 #-------------------------------------------------------------------------------
-# STEP: AddReadGroup
+# STEP: AddReadGroup_to_sambamba
 #-------------------------------------------------------------------------------
-STEP=AddReadGroup
+STEP=AddReadGroup_to_sambamba
 mkdir -p $JOB_OUTPUT_DIR/$STEP
 
 
@@ -71,7 +71,7 @@ $JOB1
 echo '#!/bin/bash' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh
 
-sbatch --job-name=addRG_${NOPATHNAME} --output=%x-%j.out --time=5:00:00 --mem=5G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
+sbatch --job-name=AddReadGroup_to_sambamba_${NOPATHNAME} --output=%x-%j.out --time=5:00:00 --mem=5G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID
 
 echo $COMMAND >> $LOG
@@ -83,7 +83,7 @@ COMMAND="echo \"Step already done\""
 echo '#!/bin/bash' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
 echo "$COMMAND" >> ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh
 
-sbatch --job-name=addRG_${NOPATHNAME} --output=%x-%j.out --time=00:02:00 --mem=1G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh \
+sbatch --job-name=AddReadGroup_to_sambamba_${NOPATHNAME} --output=%x-%j.out --time=00:02:00 --mem=1G ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}_${STEP}_skipped.sh \
 | awk '{print $4}' > ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.JOBID ;\
 fi
 

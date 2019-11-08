@@ -12,9 +12,9 @@ KNOWNSITES1=$3
 #/home/zimmers/projects/def-jacquesp/zimmers/gits/Mutect2_pipeline/genome_files/annotations/dbSnp_All_20180423.vcf.gz
 KNOWNSITES2=$4
 #/home/zimmers/projects/def-jacquesp/zimmers/gits/Mutect2_pipeline/genome_files/annotations/Mills_and_1000G_gold_standard.indels.b37.vcf.gz
-KNOWNSITES3=$5
-#/home/zimmers/projects/def-jacquesp/zimmers/gits/Mutect2_pipeline/genome_files/annotations/gnomad.genomes.r2.1.sites.vcf.gz
-PREVIOUS=$6
+# KNOWNSITES3=$5
+# #/home/zimmers/projects/def-jacquesp/zimmers/gits/Mutect2_pipeline/genome_files/annotations/gnomad.genomes.r2.1.sites.vcf.gz
+PREVIOUS=$5
 
 OUTPUT_DIR=`pwd`
 JOB_OUTPUT_DIR=$OUTPUT_DIR/job_output
@@ -80,7 +80,6 @@ java -Djava.io.tmpdir="${JOB_OUTPUT_DIR}/${STEP}" -XX:ParallelGCThreads=4 -Xmx20
   --reference_sequence $REF  \
   --knownSites $KNOWNSITES1 \
   --knownSites $KNOWNSITES2 \
-  --knownSites $KNOWNSITES3 \
   --out ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.recalibration_report.grp && \
 java -Djava.io.tmpdir="${JOB_OUTPUT_DIR}/${STEP}" -XX:ParallelGCThreads=4 -Xmx20G -jar /cvmfs/soft.mugqic/CentOS6/software/GenomeAnalysisTK/GenomeAnalysisTK-3.8/GenomeAnalysisTK.jar \
   --analysis_type PrintReads \
@@ -97,7 +96,7 @@ fi
 "
 
 if [ ! -f ${JOB_OUTPUT_DIR}/${STEP}/${NOPATHNAME}.bam ];then \
-COMMAND="module load java/1.8.0_192 gatk/3.8 samtools/1.9 && cd ${JOB_OUTPUT_DIR}/$STEP && \
+COMMAND="module load nixpkgs/16.09 intel/2018.3 java/1.8.0_192 gatk/3.8 samtools/1.9 && cd ${JOB_OUTPUT_DIR}/$STEP && \
 $JOB1
 "
 
