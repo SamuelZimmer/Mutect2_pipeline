@@ -1,0 +1,109 @@
+{
+	"__default__":
+	{
+		"job-name": "snakemake",
+		"output":"/scratch/zimmers/Mutations_pipeline/logs/sm.%x-.%j.o",
+		"account": "rrg-jacquesp-ab",
+		"nodes": "1",
+		"cpus-per-task": "1",
+		"mem": "250M",
+		"time": "0-0:01:00",
+		"mail-user": "samuel.zimmer@usherbrooke.ca",
+		"mail-type": "FAIL"
+	},
+	"Bam2fastq":
+	{
+		"job-name": "Bam2fastq",
+		"output":"/scratch/zimmers/Mutations_pipeline/logs/Bam2fastq.%x-%j.out",
+		"mem": "20G",
+		"time": "10:00:00"
+	},
+	"Trimmomatic":
+	{
+		"job-name": "Trimmomatic",
+		"output":"/scratch/zimmers/Mutations_pipeline/logs/Trimmomatic.%x-%j.out",
+		"cpus-per-task": "4",
+		"mem": "4G",
+		"time": "10:00:00"
+	},
+	"Bwa_mem":
+	{
+		"job-name": "Bwa_mem",
+        "output":"/scratch/zimmers/Mutations_pipeline/logs/Bwa_mem.%x-%j.out",
+		"cpus-per-task": "16",
+		"mem": "15G",
+		"time": "10:00:00"
+	},
+	"Sam2bam":
+	{
+		"job-name": "Sam2bam",
+        "output":"/scratch/zimmers/Mutations_pipeline/logs/Sam2bam.%x-%j.out",
+		"cpus-per-task": "16",
+		"mem": "5G",
+		"time": "10:00:00"
+    },
+	"FixMate":
+	{
+		"job-name": "FixMate",
+        "output":"/scratch/zimmers/Mutations_pipeline/logs/FixMate.%x-%j.out",
+		"cpus-per-task": "40",
+		"mem": "40G",
+		"time": "24:00:00"
+    },
+	"Sambamba_markDuplicates":
+	{
+		"job-name": "Sambamba_markDuplicates",
+        "output":"/scratch/zimmers/Mutations_pipeline/logs/Sambamba_markDuplicates.%x-%j.out",
+		"cpus-per-task": "5",
+		"mem": "20G",
+		"time": "12:00:00"
+    },
+    "Recalibration_report":
+    {
+		"job-name": "Recalibration_report",
+        "output":"/scratch/zimmers/Mutations_pipeline/logs/Recalibration_report.%x-%j.out",
+		"cpus-per-task": "20",
+		"mem": "31G",
+		"time": "72:00:00"        
+    },
+    "Recalibration":
+    {
+		"job-name": "Recalibration",
+        "output":"/scratch/zimmers/Mutations_pipeline/logs/Recalibration.%x-%j.out",
+		"cpus-per-task": "20",
+		"mem": "31G",
+		"time": "72:00:00"        
+    },
+    "Recalibration_index":
+    {
+		"job-name": "Recalibration",
+        "output":"/scratch/zimmers/Mutations_pipeline/logs/Recalibration.%x-%j.out",
+		"cpus-per-task": "20",
+		"mem": "31G",
+		"time": "72:00:00"        
+    },
+    "Mutect2":
+    {
+        "job-name": "Mutect2",
+        "output":"/scratch/zimmers/Mutations_pipeline/logs/Mutect2.%x-%j.out",
+		"cpus-per-task": "1",
+		"mem": "31G",
+		"time": "24:00:00" 
+    },
+    "Filter_Mutect":
+    {
+        "job-name": "Filter_Mutect",
+        "output":"/scratch/zimmers/Mutations_pipeline/logs/Filter_Mutect.%x-%j.out",
+		"cpus-per-task": "1",
+		"mem": "8G",
+		"time": "5:00:00" 
+    },
+    "Concat_Mutect":
+    {
+        "job-name": "Concat_Mutect",
+        "output":"/scratch/zimmers/Mutations_pipeline/logs/Concat_Mutect.%x-%j.out",
+		"cpus-per-task": "1",
+		"mem": "8G",
+		"time": "1:00:00" 
+    }
+}

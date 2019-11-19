@@ -1,0 +1,30 @@
+configfile: "config.json"
+
+#TODO add threads and logs to rules and possibly split params
+
+SAMPLES = ["test_tumor"]
+
+PAIRS = {"test_tumor":"test_normal", "test2_tumor":"test2_normal"}
+
+CHR = config['ref']['chromosomes']
+
+# def recurse_chr(wcs):
+#     n = int(wcs)
+#     if n== 1:
+#         return "test/%s.txt" % wcs.chr
+
+"""rule including all steps (add final file)"""
+
+rule all:
+    input: 
+        expand("results/mutect2/{sample}.vcf.gz.tbi", sample=SAMPLES)
+   
+
+# Adding rules to realign bam
+include: "rules/realign.smk"
+
+# Adding rules to preprocess bam
+include : "rules/preprocess.smk"
+
+# Adding rules to detect snps and small indels (aka mutect2)
+include : "rules/mutect2.smk"

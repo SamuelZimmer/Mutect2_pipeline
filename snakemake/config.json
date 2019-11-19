@@ -1,0 +1,43 @@
+{
+    "ref":
+    {
+        "fasta": "/home/zimmers/projects/def-jacquesp/zimmers/genomes/GRCh37d5/genome.fa",
+        "chromosomes": [
+            "Chr1",
+            "Chr2",
+            "Chr3",
+            "Chr4",
+            "Chr5",
+            "Chr6",
+            "Chr7",
+            "Chr8",
+            "Chr9",
+            "Chr10",
+            "Chr11",
+            "Chr12",
+            "Chr13",
+            "Chr14",
+            "Chr15",
+            "Chr16",
+            "Chr17",
+            "Chr18",
+            "Chr19",
+            "Chr20",
+            "Chr21",
+            "Chr22",
+            "ChrX",
+            "ChrY" ,
+            "ChrMT" 
+        ]
+    },
+    "bwa":
+    {
+        "readgroup": "\"@RG\\tLB:MPS12343345-B01\\tPU:run4784_1\\tCN:McGill_University_and_Genome_Quebec_Innovation_Centre\\tSM:HAP1_p53_KO_parental\\tPL:Illumina\""
+    },
+    "recalibration":
+    {
+        "dbsnp": "/home/zimmers/projects/def-jacquesp/zimmers/genomes/new_annotation/dbsnp/All_20180418.vcf.gz",
+        "mills": "/home/zimmers/projects/def-jacquesp/zimmers/genomes/new_annotation/Mills_and_1000G_gold_standard.indels.b37.vcf.gz"
+    }
+
+}
